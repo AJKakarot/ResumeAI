@@ -1,8 +1,11 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
+import { FREE_PLAN_MAX_RESUMES } from "@/lib/planLimits";
 import { errorToast, successToast } from "@/lib/toast";
 import type { ResumeRow } from "@/types/supabase";
 
@@ -97,18 +100,43 @@ export function DashboardResumeSection() {
 
   if (!isLoaded || !user) return null;
 
+  const meta = user.publicMetadata as Record<string, unknown> | undefined;
+  const isPro = isPremiumPublicMetadata(meta);
+  const freeAtResumeLimit = !isPro && resumes.length >= FREE_PLAN_MAX_RESUMES;
+
   return (
     <div className="mt-8 space-y-6 border-t border-white/10 pt-8">
       <div>
         <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Resumes</h2>
         <p className="mt-1 text-xs leading-relaxed text-zinc-600">PDF uploads are stored in Supabase Storage.</p>
+        {!isPro && (
+          <p className="mt-2 text-xs text-zinc-500">
+            Free plan: {resumes.length}/{FREE_PLAN_MAX_RESUMES} resumes.
+            {freeAtResumeLimit ? (
+              <>
+                {" "}
+                Delete a resume to upload another, or{" "}
+                <Link href="/pricing" className="font-medium text-sky-400/95 underline-offset-2 hover:underline">
+                  upgrade to Pro
+                </Link>{" "}
+                for unlimited uploads.
+              </>
+            ) : null}
+          </p>
+        )}
         <motion.label
-          className="btn btn-outline mt-4 inline-flex cursor-pointer rounded-xl border border-white/15 bg-white/[0.04] text-zinc-200 transition-all duration-300 hover:border-orange-500/40 hover:bg-orange-500/[0.08]"
-          whileHover={reduce ? undefined : { scale: 1.05 }}
-          whileTap={reduce ? undefined : { scale: 0.97 }}
+          className={
+            freeAtResumeLimit
+              ? "btn btn-outline mt-4 inline-flex cursor-not-allowed rounded-xl border border-white/10 bg-white/[0.02] text-zinc-500 opacity-60 pointer-events-none"
+              : "btn btn-outline mt-4 inline-flex cursor-pointer rounded-xl border border-white/15 bg-white/[0.04] text-zinc-200 transition-all duration-300 hover:border-orange-500/40 hover:bg-orange-500/[0.08]"
+          }
+          whileHover={reduce || freeAtResumeLimit ? undefined : { scale: 1.05 }}
+          whileTap={reduce || freeAtResumeLimit ? undefined : { scale: 0.97 }}
         >
           {uploading ? (
             <span className="loading loading-spinner loading-sm text-orange-400" />
+          ) : freeAtResumeLimit ? (
+            "Limit reached"
           ) : (
             "Upload PDF"
           )}
@@ -117,7 +145,7 @@ export function DashboardResumeSection() {
             accept="application/pdf,.pdf"
             className="hidden"
             onChange={onFile}
-            disabled={uploading}
+            disabled={uploading || freeAtResumeLimit}
           />
         </motion.label>
       </div>
