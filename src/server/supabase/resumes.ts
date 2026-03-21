@@ -28,6 +28,23 @@ export async function insertResumeRow(input: {
   return { data: data as ResumeRow, error: null };
 }
 
+export async function countResumesByUserId(
+  userId: string
+): Promise<{ count: number; error: Error | null }> {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) {
+    return { count: 0, error: new Error("Set SUPABASE_SERVICE_ROLE_KEY") };
+  }
+
+  const { count, error } = await supabase
+    .from("resumes")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  if (error) return { count: 0, error: new Error(error.message) };
+  return { count: count ?? 0, error: null };
+}
+
 export async function listResumesByUserId(
   userId: string
 ): Promise<{ data: ResumeRow[]; error: Error | null }> {
