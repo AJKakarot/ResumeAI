@@ -1,15 +1,48 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
+/** App areas that need a signed-in user (not the marketing pages below). */
+const isProtectedRoute = createRouteMatcher([
+  "/dashboard(.*)",
+  "/editor(.*)",
+  "/resume-analyzing(.*)",
+]);
+
+/** Can browse without an account (home `/` is NOT listed — it requires sign-in). */
+const isPublicRoute = createRouteMatcher([
+  "/sign-up(.*)",
+  "/pricing(.*)",
+  "/features(.*)",
+  "/docs(.*)",
+]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) {
-    const { userId } = await auth();
-    if (!userId) {
+  const { userId } = await auth();
+  const pathname = req.nextUrl.pathname;
+
+  // Let API routes handle their own auth (JSON errors, not HTML redirects).
+  if (pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
+  // Marketing / auth pages
+  if (isPublicRoute(req)) {
+    if (userId && pathname.startsWith("/sign-up")) {
       return NextResponse.redirect(new URL("/", req.url));
     }
+    return NextResponse.next();
   }
+
+  // Home (landing) — signed-in only
+  if (pathname === "/" && !userId) {
+    return NextResponse.redirect(new URL("/sign-up", req.url));
+  }
+
+  if (isProtectedRoute(req) && !userId) {
+    return NextResponse.redirect(new URL("/sign-up", req.url));
+  }
+
+  return NextResponse.next();
 });
 
 export const config = {
