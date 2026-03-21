@@ -24,7 +24,7 @@ export function NavbarClerkFallback() {
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-3 py-3 sm:px-4 md:px-6 md:py-3.5">
         <Link
           className="resume-ai-logo-static shrink-0 text-base font-semibold tracking-tight text-white transition-transform duration-300 ease-out hover:scale-[1.02] sm:text-lg"
-          href="/"
+          href="/sign-up"
         >
           ResumeAI
         </Link>
@@ -48,6 +48,12 @@ export function NavbarClerkFallback() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <Link
+            href="/sign-up"
+            className="btn btn-ghost min-h-0 px-2 text-xs font-medium text-zinc-400 hover:text-white sm:px-3 sm:text-sm"
+          >
+            Sign up
+          </Link>
           <button
             type="button"
             className="btn min-h-[44px] rounded-xl border border-white/20 bg-white/[0.05] px-3 text-xs font-medium text-zinc-500 transition-all duration-300 ease-out sm:min-h-10 sm:px-4 sm:text-sm"

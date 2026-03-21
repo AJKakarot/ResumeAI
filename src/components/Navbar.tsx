@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { NavbarClerkFallback } from "./NavbarClerkFallback";
+import { NavbarUserButton } from "./NavbarUserButton";
 import { SectionLink } from "./SectionLink";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 
@@ -32,12 +33,22 @@ export function Navbar() {
       }`}
     >
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-3 py-3 sm:px-4 md:px-6 md:py-3.5">
-        <Link
-          className="resume-ai-logo-static shrink-0 text-base font-semibold tracking-tight text-white transition-transform duration-300 ease-out hover:scale-[1.02] sm:text-lg"
-          href="/"
-        >
-          ResumeAI
-        </Link>
+        <SignedOut>
+          <Link
+            className="resume-ai-logo-static shrink-0 text-base font-semibold tracking-tight text-white transition-transform duration-300 ease-out hover:scale-[1.02] sm:text-lg"
+            href="/sign-up"
+          >
+            ResumeAI
+          </Link>
+        </SignedOut>
+        <SignedIn>
+          <Link
+            className="resume-ai-logo-static shrink-0 text-base font-semibold tracking-tight text-white transition-transform duration-300 ease-out hover:scale-[1.02] sm:text-lg"
+            href="/"
+          >
+            ResumeAI
+          </Link>
+        </SignedIn>
 
         <nav
           className="flex min-w-0 flex-1 justify-center gap-1 overflow-x-auto py-1 [-ms-overflow-style:none] [scrollbar-width:none] md:gap-2 [&::-webkit-scrollbar]:hidden"
@@ -59,6 +70,12 @@ export function Navbar() {
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <SignedOut>
+            <Link
+              href="/sign-up"
+              className="btn btn-ghost min-h-0 px-2 text-xs font-medium text-zinc-400 transition-colors hover:text-white sm:px-3 sm:text-sm"
+            >
+              Sign up
+            </Link>
             <GoogleSignInButton className={googleBtnClass} />
           </SignedOut>
           <SignedIn>
@@ -68,14 +85,7 @@ export function Navbar() {
             >
               Dashboard
             </Link>
-            <UserButton
-              appearance={{
-                variables: {
-                  colorPrimary: "#f97316",
-                  colorTextOnPrimaryBackground: "#431407",
-                },
-              }}
-            />
+            <NavbarUserButton />
           </SignedIn>
         </div>
       </div>
