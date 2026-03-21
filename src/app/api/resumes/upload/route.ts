@@ -1,8 +1,10 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
+import { FREE_PLAN_MAX_RESUMES } from "@/lib/planLimits";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { upsertUserByClerkId } from "@/server/supabase/users";
-import { insertResumeRow } from "@/server/supabase/resumes";
+import { countResumesByUserId, insertResumeRow } from "@/server/supabase/resumes";
 
 export const runtime = "nodejs";
 
@@ -42,6 +44,24 @@ export async function POST(req: Request) {
   const { data: appUser, error: upsertErr } = await upsertUserByClerkId(userId, email, name);
   if (upsertErr || !appUser) {
     return NextResponse.json({ error: upsertErr?.message ?? "User sync failed" }, { status: 503 });
+  }
+
+  const meta = user.publicMetadata as Record<string, unknown> | undefined;
+  const isPro = isPremiumPublicMetadata(meta);
+  if (!isPro) {
+    const { count, error: cntErr } = await countResumesByUserId(appUser.id);
+    if (cntErr) {
+      return NextResponse.json({ error: cntErr.message }, { status: 503 });
+    }
+    if (count >= FREE_PLAN_MAX_RESUMES) {
+      return NextResponse.json(
+        {
+          error: `Free plan allows up to ${FREE_PLAN_MAX_RESUMES} resumes. Delete one or upgrade to Pro.`,
+          code: "FREE_RESUME_LIMIT",
+        },
+        { status: 403 }
+      );
+    }
   }
 
   const form = await req.formData();
