@@ -1,36 +1,76 @@
 "use client";
 
-import { useRef } from "react";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { useRef, useState, useCallback, useMemo, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
 import { MarketingShell } from "./MarketingShell";
 import { AnalysisTerminal } from "./AnalysisTerminal";
 import { GoogleSignInButton } from "./GoogleSignInButton";
-
-type LandingPageProps = {
-  onFileSelected?: (file: File) => void;
-  onDemo?: () => void;
-};
+import { JobTitleAutocomplete } from "./JobTitleAutocomplete";
+import { hasResumeEditorAccess } from "@/lib/resumeEditorAccess";
 
 const heroPrimarySignedIn =
-  "btn btn-primary min-h-[48px] w-full rounded-xl border-0 px-6 text-sm font-medium transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.99] sm:w-auto sm:min-w-[200px] sm:px-8";
+  "btn btn-primary min-h-[48px] w-full rounded-xl border-0 px-6 text-sm font-medium transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-45 sm:w-auto sm:min-w-[200px] sm:px-8";
 
 const heroGoogle =
   "btn min-h-[48px] w-full rounded-xl border-0 bg-gradient-to-b from-orange-500 to-orange-600 px-6 text-sm font-medium text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:from-orange-400 hover:to-orange-500 sm:w-auto sm:min-w-[220px] sm:px-8";
 
 const outlineBtn =
-  "btn btn-outline min-h-[48px] w-full rounded-xl border-white/20 bg-transparent px-6 text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:border-orange-500/35 hover:bg-white/[0.04] sm:w-auto sm:min-w-[160px] sm:px-8";
+  "btn btn-outline min-h-[48px] w-full rounded-xl border-white/20 bg-transparent px-6 text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:border-orange-500/35 hover:bg-white/[0.04] disabled:pointer-events-none disabled:opacity-45 sm:w-auto sm:min-w-[160px] sm:px-8";
 
 const ctaBottomBtn =
-  "inline-flex w-full max-w-xs items-center justify-center rounded-lg border-0 bg-orange-500 px-6 py-3 text-sm font-medium text-black transition-all duration-300 hover:scale-[1.03] hover:bg-orange-400 sm:w-auto sm:max-w-none";
+  "inline-flex w-full max-w-xs items-center justify-center rounded-lg border-0 bg-orange-500 px-6 py-3 text-sm font-medium text-black transition-all duration-300 hover:scale-[1.03] hover:bg-orange-400 disabled:pointer-events-none disabled:opacity-45 sm:w-auto sm:max-w-none";
 
-export default function LandingPage({ onFileSelected, onDemo }: LandingPageProps) {
+const fieldClass =
+  "w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 outline-none ring-orange-500/30 focus:border-orange-500/40 focus:ring-2";
+
+export default function LandingPage() {
+  const router = useRouter();
+  const { user, isSignedIn } = useUser();
+  const isPremium = useMemo(
+    () => isPremiumPublicMetadata(user?.publicMetadata as Record<string, unknown> | undefined),
+    [user]
+  );
+  const canUseGeminiPolish = Boolean(isSignedIn && isPremium);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const pickFile = () => inputRef.current?.click();
 
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [runKey, setRunKey] = useState(0);
+  const [analysisBusy, setAnalysisBusy] = useState(false);
+  const [jobTitle, setJobTitle] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
+  const [enhanceWithGemini, setEnhanceWithGemini] = useState(false);
+  const [canOpenEditor, setCanOpenEditor] = useState(false);
+
+  useEffect(() => {
+    if (!canUseGeminiPolish) setEnhanceWithGemini(false);
+  }, [canUseGeminiPolish]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setCanOpenEditor(false);
+      return;
+    }
+    setCanOpenEditor(hasResumeEditorAccess(user.id));
+  }, [user?.id]);
+
+  const onAnalysisComplete = useCallback(() => {
+    setAnalysisBusy(false);
+    if (user?.id) setCanOpenEditor(hasResumeEditorAccess(user.id));
+  }, [user?.id]);
+
   const handleFiles = (files: FileList | null) => {
+    if (!isSignedIn) return;
     const file = files?.[0];
     if (!file) return;
-    onFileSelected?.(file);
+    setUploadFile(file);
+    setRunKey((k) => k + 1);
+    setAnalysisBusy(true);
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   return (
@@ -54,20 +94,30 @@ export default function LandingPage({ onFileSelected, onDemo }: LandingPageProps
             </span>
           </h1>
           <p className="mx-auto mb-4 max-w-md text-pretty text-sm leading-relaxed text-zinc-400 sm:max-w-lg md:max-w-xl md:text-base">
-            ATS score, fixes, and phrasing—instantly. Upload once.
+          Get ATS score and improve instantly
           </p>
           <div className="mx-auto flex w-full max-w-md flex-col items-stretch gap-2.5 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
             <SignedOut>
               <GoogleSignInButton className={heroGoogle} />
             </SignedOut>
             <SignedIn>
-              <button type="button" className={heroPrimarySignedIn} onClick={pickFile}>
-                Upload Resume
+              <button type="button" className={heroPrimarySignedIn} disabled={analysisBusy} onClick={pickFile}>
+                {analysisBusy ? "Analyzing…" : "Upload Resume"}
               </button>
+              {canOpenEditor ? (
+                <Link href="/editor" className={outlineBtn}>
+                  Resume Editor
+                </Link>
+              ) : (
+                <span
+                  className={`${outlineBtn} cursor-not-allowed opacity-45`}
+                  title="Upload a resume and run analysis first"
+                  aria-disabled
+                >
+                  Resume Editor
+                </span>
+              )}
             </SignedIn>
-            <button type="button" className={outlineBtn} onClick={onDemo}>
-              View Demo
-            </button>
           </div>
         </div>
         <input
@@ -75,16 +125,90 @@ export default function LandingPage({ onFileSelected, onDemo }: LandingPageProps
           type="file"
           accept=".pdf,.docx,.doc,.txt,application/pdf"
           className="hidden"
+          disabled={analysisBusy || !isSignedIn}
           onChange={(e) => handleFiles(e.target.files)}
         />
       </section>
 
+      <section className="mx-auto mt-2 max-w-2xl px-4 sm:px-6">
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
+          <label className="mb-1 block text-[11px] uppercase tracking-wide text-zinc-500">Target job title</label>
+          <JobTitleAutocomplete
+            className={`${fieldClass} mb-3`}
+            placeholder="Start typing — e.g. Senior Full-Stack Engineer"
+            value={jobTitle}
+            onChange={setJobTitle}
+            disabled={analysisBusy || !isSignedIn}
+          />
+          <label className="mb-1 block text-[11px] uppercase tracking-wide text-zinc-500">Job description</label>
+          <textarea
+            className={`${fieldClass} mb-3 min-h-[88px] resize-y`}
+            placeholder="Paste JD → Get skill match & key insights."
+            value={jobDescription}
+            onChange={(e) => setJobDescription(e.target.value)}
+            disabled={analysisBusy || !isSignedIn}
+          />
+          <div className="flex flex-col gap-1.5">
+            <label
+              className={`flex items-start gap-2 text-left text-sm ${
+                canUseGeminiPolish ? "cursor-pointer text-zinc-400" : "cursor-not-allowed text-zinc-600"
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="mt-1 rounded border-white/20 disabled:opacity-40"
+                checked={enhanceWithGemini}
+                onChange={(e) => setEnhanceWithGemini(e.target.checked)}
+                disabled={analysisBusy || !canUseGeminiPolish}
+              />
+              <span>
+                Add <span className="text-orange-400/95">Gemini</span> polish{" "}
+                <span className="rounded border border-orange-500/30 bg-orange-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-orange-300/95">
+                  Pro
+                </span>
+              </span>
+            </label>
+            {!isSignedIn && (
+              <p className="text-[11px] text-zinc-500">
+                Sign in to unlock. Gemini polish uses paid API credits — Pro only.
+              </p>
+            )}
+            {isSignedIn && !isPremium && (
+              <p className="text-[11px] text-zinc-500">
+                Pro only —{" "}
+                <Link href="/pricing" className="font-medium text-orange-400/95 underline-offset-2 hover:underline">
+                  view plans.
+                </Link>
+                
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
       <section className="mx-auto mt-6 max-w-6xl px-6 pb-0" aria-label="Analysis preview">
         <p className="mb-3 text-center text-sm font-medium tracking-tight text-zinc-400 md:text-base">
-          What happens when you upload — instant pipeline preview
+          Pipeline — upload to run
         </p>
         <div className="mb-6">
-          <AnalysisTerminal />
+          <SignedIn>
+            <AnalysisTerminal
+              key={runKey}
+              file={uploadFile}
+              runKey={runKey}
+              jobTitle={jobTitle}
+              jobDescription={jobDescription}
+              enhanceWithGemini={enhanceWithGemini}
+              isPro={isPremium}
+              onAnalysisComplete={onAnalysisComplete}
+              onOpenEditor={() => router.push("/editor")}
+            />
+          </SignedIn>
+          <SignedOut>
+            <div className="flex justify-center rounded-xl border border-white/10 bg-white/[0.02] px-6 py-8">
+              <GoogleSignInButton className={heroGoogle} />
+            </div>
+          </SignedOut>
         </div>
 
         <div className="mt-10 border-t border-white/[0.08] py-8">
@@ -123,8 +247,8 @@ export default function LandingPage({ onFileSelected, onDemo }: LandingPageProps
               <GoogleSignInButton className={ctaBottomBtn} />
             </SignedOut>
             <SignedIn>
-              <button type="button" className={ctaBottomBtn} onClick={pickFile}>
-                Start Now
+              <button type="button" className={ctaBottomBtn} disabled={analysisBusy} onClick={pickFile}>
+                {analysisBusy ? "Analyzing…" : "Start Now"}
               </button>
             </SignedIn>
           </div>

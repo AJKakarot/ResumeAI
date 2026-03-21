@@ -27,7 +27,7 @@ export function LandingFooter() {
               Pricing
             </SectionLink>
             <Link
-              href="/"
+              href="/docs"
               className="font-medium text-zinc-400 transition-all duration-300 ease-out hover:text-white"
             >
               Docs
@@ -44,7 +44,7 @@ export function LandingFooter() {
           </div>
 
           <p className="text-xs font-normal tracking-wide text-zinc-600">
-            © 2026 ResumeAI · Built for job seekers
+            © 2026 ResumeAI · Built by Ajeet Gupta
           </p>
         </div>
       </div>
