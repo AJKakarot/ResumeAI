@@ -15,6 +15,37 @@
 
 ---
 
+## What I did in this project
+
+Personal log of work shipped on **ResumeAI** (landing UX, brand, repo hygiene, and docs).
+
+### Landing page & layout
+- Refactored the **bottom of the landing page** (social proof, CTA, footer): tighter vertical rhythm, `max-w-6xl` alignment, less dead space, Linear-style spacing.
+- **Social proof:** line **“1,000+ resumes analyzed successfully”** with orange highlight on the number.
+- **Trusted by teams at** (Acme, Northwind, …): moved **below** the 1,000+ stat, then **combined** into one block with a subtle divider and **tighter gaps** between stat and logos.
+- **Company chips:** hover state — **white text**, lift, soft glow (interactive “logo strip” feel).
+- **CTA section:** consistent padding, heading/button spacing, orange primary buttons for Google + “Start Now”.
+
+### Brand & UI polish
+- **ResumeAI** wordmark: **static white glow** on the navbar and footer (tuned `text-shadow` + `drop-shadow` in `globals.css`), with a slightly stronger glow on hover.
+- **Navbar** `ResumeAI` link + **NavbarClerkFallback** + **LandingFooter** brand link share the same treatment.
+
+### Favicon & browser chrome
+- **Tab icon:** circular **orange** background, **black “RA”** text (larger glyphs), in `src/app/icon.svg` and `public/favicon.svg`.
+- **Theme color** for supported browsers set to the orange accent in `layout.tsx`.
+
+### Configuration & repository
+- **`.env.example`** rewritten with **placeholders only** (no real Supabase project IDs or secrets) — safe to commit.
+- **`.gitignore`** updated so **`.env` / `.ENV`** are never committed.
+- **Documentation:** expanded **README** (setup, env table, Supabase migration, API overview, troubleshooting).
+- **Git:** project tracked in Git and **pushed to GitHub** (`main`).
+
+### Not in scope (ideas for later)
+- LangChain / OpenAPI agent layer (not wired in this repo yet).
+- Production deploy (e.g. Vercel) — follow Quick start + env on the host when you’re ready.
+
+---
+
 ## Tech stack
 
 - **Framework:** [Next.js 15](https://nextjs.org) (App Router) + React 19  
@@ -73,6 +104,8 @@ npm install
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase features | Project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client-safe access | Supabase anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Yes** for sync, resumes, uploads | Server-only; never expose to the client |
+| `GEMINI_API_KEY` | **Yes** for AI demo (Analyze / Tailor / Cover Letter) | Server-only — [Google AI Studio](https://aistudio.google.com/apikey) |
+| `GEMINI_MODEL` | Optional | Defaults to `gemini-2.0-flash`; use `gemini-1.5-flash` if needed |
 | `DATABASE_URL` | Optional | Direct Postgres (`src/lib/db.ts`) if you use SQL helpers |
 
 > **Note:** If `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is missing, the app still **builds**; the navbar shows a disabled sign-in placeholder.
@@ -135,8 +168,9 @@ supabase/migrations/        # SQL for schema + storage
 | `/api/resumes` | GET, POST | List / create resumes |
 | `/api/resumes/upload` | POST | Multipart upload to Storage |
 | `/api/resumes/[id]` | DELETE | Remove resume + object |
+| `/api/gemini` | POST | **Gemini proxy** — `{ userPrompt, systemPrompt }`; uses `GEMINI_API_KEY` (ResumeAnalyzer) |
 
-All require a valid Clerk session where applicable; service role is used server-side for Supabase admin operations.
+Resume/resume APIs require a valid Clerk session where applicable; service role is used server-side for Supabase admin operations. `/api/gemini` is called from the logged-in analyzer UI and does not expose the API key to the browser.
 
 ---
 
