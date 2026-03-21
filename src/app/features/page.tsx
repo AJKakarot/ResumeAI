@@ -3,7 +3,8 @@ import { FeaturesPageClient } from "./FeaturesPageClient";
 
 export const metadata: Metadata = {
   title: "Features · ResumeAI",
-  description: "ATS optimization, scoring, rewrites, and more — everything you need to improve your resume.",
+  description:
+    "ATS optimization, instant scoring, JD alignment, resume editor, Gemini polish (Pro), and secure checkout with Razorpay.",
 };
 
 export default function FeaturesPage() {
