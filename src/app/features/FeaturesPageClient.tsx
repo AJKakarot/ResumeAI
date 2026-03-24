@@ -9,7 +9,6 @@ export function FeaturesPageClient() {
     <MarketingShell>
       <FeaturesSection />
       <HowItWorksSection />
-
     </MarketingShell>
   );
 }
