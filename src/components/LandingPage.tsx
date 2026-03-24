@@ -9,7 +9,6 @@ import { MarketingShell } from "./MarketingShell";
 import { AnalysisTerminal } from "./AnalysisTerminal";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 import { JobTitleAutocomplete } from "./JobTitleAutocomplete";
-import { hasResumeEditorAccess } from "@/lib/resumeEditorAccess";
 
 const heroPrimarySignedIn =
   "btn btn-primary min-h-[48px] w-full rounded-xl border-0 px-6 text-sm font-medium transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-45 sm:w-auto sm:min-w-[200px] sm:px-8";
@@ -44,24 +43,14 @@ export default function LandingPage() {
   const [jobTitle, setJobTitle] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [enhanceWithGemini, setEnhanceWithGemini] = useState(false);
-  const [canOpenEditor, setCanOpenEditor] = useState(false);
 
   useEffect(() => {
     if (!canUseGeminiPolish) setEnhanceWithGemini(false);
   }, [canUseGeminiPolish]);
 
-  useEffect(() => {
-    if (!user?.id) {
-      setCanOpenEditor(false);
-      return;
-    }
-    setCanOpenEditor(hasResumeEditorAccess(user.id));
-  }, [user?.id]);
-
   const onAnalysisComplete = useCallback(() => {
     setAnalysisBusy(false);
-    if (user?.id) setCanOpenEditor(hasResumeEditorAccess(user.id));
-  }, [user?.id]);
+  }, []);
 
   const handleFiles = (files: FileList | null) => {
     if (!isSignedIn) return;
@@ -104,19 +93,9 @@ export default function LandingPage() {
               <button type="button" className={heroPrimarySignedIn} disabled={analysisBusy} onClick={pickFile}>
                 {analysisBusy ? "Analyzing…" : "Upload Resume"}
               </button>
-              {canOpenEditor ? (
-                <Link href="/editor" className={outlineBtn}>
-                  Resume Editor
-                </Link>
-              ) : (
-                <span
-                  className={`${outlineBtn} cursor-not-allowed opacity-45`}
-                  title="Upload a resume and run analysis first"
-                  aria-disabled
-                >
-                  Resume Editor
-                </span>
-              )}
+              <Link href="/editor" className={outlineBtn}>
+                Career guide
+              </Link>
             </SignedIn>
           </div>
         </div>
@@ -135,7 +114,7 @@ export default function LandingPage() {
           <label className="mb-1 block text-[11px] uppercase tracking-wide text-zinc-500">Target job title</label>
           <JobTitleAutocomplete
             className={`${fieldClass} mb-3`}
-            placeholder="Start typing — e.g. Senior Full-Stack Engineer"
+            placeholder=" e.g. Senior Full-Stack Engineer"
             value={jobTitle}
             onChange={setJobTitle}
             disabled={analysisBusy || !isSignedIn}
@@ -143,7 +122,7 @@ export default function LandingPage() {
           <label className="mb-1 block text-[11px] uppercase tracking-wide text-zinc-500">Job description</label>
           <textarea
             className={`${fieldClass} mb-3 min-h-[88px] resize-y`}
-            placeholder="Paste JD → Get skill match & key insights."
+            placeholder="Paste JD → Get match & insights."
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
             disabled={analysisBusy || !isSignedIn}
@@ -162,24 +141,19 @@ export default function LandingPage() {
                 disabled={analysisBusy || !canUseGeminiPolish}
               />
               <span>
-                Add <span className="text-orange-400/95">Gemini</span> polish{" "}
-                <span className="rounded border border-orange-500/30 bg-orange-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-orange-300/95">
-                  Pro
-                </span>
+                Add <span className="text-orange-400/95">Gemini</span> polish.
               </span>
             </label>
             {!isSignedIn && (
-              <p className="text-[11px] text-zinc-500">
-                Sign in to unlock. Gemini polish uses paid API credits — Pro only.
-              </p>
+              <p className="text-[11px] text-zinc-500">Sign in to enable Gemini polish.</p>
             )}
             {isSignedIn && !isPremium && (
               <p className="text-[11px] text-zinc-500">
-                Pro only —{" "}
+                Upgrade to enable —{" "}
                 <Link href="/pricing" className="font-medium text-orange-400/95 underline-offset-2 hover:underline">
-                  view plans.
+                  view plans
                 </Link>
-                
+                .
               </p>
             )}
           </div>
@@ -201,7 +175,7 @@ export default function LandingPage() {
               enhanceWithGemini={enhanceWithGemini}
               isPro={isPremium}
               onAnalysisComplete={onAnalysisComplete}
-              onOpenEditor={() => router.push("/editor")}
+              onViewResume={() => router.push("/resume-ats")}
             />
           </SignedIn>
           <SignedOut>
