@@ -168,9 +168,9 @@ supabase/migrations/        # SQL for schema + storage
 | `/api/resumes` | GET, POST | List / create resumes |
 | `/api/resumes/upload` | POST | Multipart upload to Storage |
 | `/api/resumes/[id]` | DELETE | Remove resume + object |
-| `/api/gemini` | POST | **Gemini proxy** — `{ userPrompt, systemPrompt }`; uses `GEMINI_API_KEY` (ResumeAnalyzer) |
+| `/api/gemini` | POST | **Gemini proxy** — `{ userPrompt, systemPrompt }`; uses `GEMINI_API_KEY` (`fetchResumeInsights`, etc.) |
 
-Resume/resume APIs require a valid Clerk session where applicable; service role is used server-side for Supabase admin operations. `/api/gemini` is called from the logged-in analyzer UI and does not expose the API key to the browser.
+Resume/resume APIs require a valid Clerk session where applicable; service role is used server-side for Supabase admin operations. `/api/gemini` is called from server-backed flows (e.g. resume insights) and does not expose the API key to the browser.
 
 ---
 
