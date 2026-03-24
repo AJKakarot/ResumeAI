@@ -9,7 +9,7 @@ export type LandingFeatureItem = {
   layout?: LandingFeatureLayout;
 };
 
-/** Marketing features — aligned with Landing (upload, JD, Gemini), Editor, Pricing (Razorpay). */
+/** Marketing features — home pipeline, `/resume-ats`, `/editor` career guide, paid Gemini polish. */
 export const LANDING_FEATURES: readonly LandingFeatureItem[] = [
   {
     icon: "📄",
@@ -55,18 +55,19 @@ export const LANDING_FEATURES: readonly LandingFeatureItem[] = [
     layout: "default",
   },
   {
-    icon: "📝",
-    tag: "Editor",
-    title: "Built-in resume editor",
-    description: "Jump from analysis to editing—tune sections and export without leaving the app.",
+    icon: "🧭",
+    tag: "Guide",
+    title: "Career guide",
+    description:
+      "Enter your skills on the career page—we generate a structured path and milestones with Gemini (sign-in required).",
     layout: "default",
   },
   {
     icon: "✦",
-    tag: "Pro",
+    tag: "AI",
     title: "Gemini polish",
     description:
-      "Optional AI-assisted polish for premium users—deeper wording improvements powered by Gemini (usage limits apply).",
+      "Optional on home analysis for paid plans: stronger suggestions plus a JSON ATS report after your scan (usage limits apply).",
     layout: "pro",
   },
 ] as const;
