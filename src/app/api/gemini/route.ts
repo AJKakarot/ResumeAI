@@ -6,7 +6,7 @@ const MAX_SYSTEM_CHARS = 6_000;
 
 /**
  * Server-only Gemini proxy — keeps GEMINI_API_KEY off the client.
- * Used by ResumeAnalyzer: Analyze, Tailor, Cover Letter.
+ * Used by `fetchResumeInsights` (resume analyzing flow) and similar callers.
  */
 export async function POST(req: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
