@@ -246,7 +246,7 @@ export function ResumeAnalyzingClient() {
               onClick={openEditor}
               className="btn rounded-xl border-0 bg-orange-500 px-6 text-black hover:bg-orange-400"
             >
-              Open Resume Editor
+              Open career guide
             </button>
             <Link href="/" className="btn btn-outline rounded-xl border-white/20 text-white">
               Home
