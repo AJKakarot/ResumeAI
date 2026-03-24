@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     if (!isPremiumPublicMetadata(meta)) {
       return NextResponse.json(
         {
-          error: "Gemini polish is available on Pro. Upgrade or contact support.",
+          error: "Gemini polish requires a paid plan. Upgrade or contact support.",
           code: "GEMINI_PREMIUM_REQUIRED",
         },
         { status: 403 }
