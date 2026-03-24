@@ -8,14 +8,18 @@ export function HowItWorksSection() {
         </h2>
         <p className="mt-3 text-sm text-zinc-400 sm:mt-4 sm:text-base">
           Add a job title &amp; JD on the home page for deeper fit—optional{" "}
-          <span className="text-orange-400/90">Gemini polish</span> for Pro.
+          <span className="text-orange-400/90">Gemini polish</span> on paid plans.
         </p>
       </div>
       <div className="mt-10 flex flex-col gap-6 sm:mt-12 md:flex-row md:items-stretch md:justify-between md:gap-6">
         {[
           { step: "1", title: "Upload resume", body: "PDF or DOCX—pick a file from the landing analyzer." },
           { step: "2", title: "AI analysis", body: "We parse structure, keywords, and match against your JD if provided." },
-          { step: "3", title: "Score & next steps", body: "See ATS-style signals, gaps, and edits—or open the editor to apply them." },
+          {
+            step: "3",
+            title: "Score & next steps",
+            body: "See ATS-style signals and gaps—open your resume report or the career guide to go deeper.",
+          },
         ].map((item) => (
           <div
             key={item.step}
