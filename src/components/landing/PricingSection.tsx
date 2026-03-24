@@ -217,7 +217,7 @@ export function PricingSection({ onPickFile, onPro, onCheckoutRazorpay }: Pricin
                 <span className="text-orange-400">✓</span> Priority processing
               </li>
               <li className="flex gap-2">
-                <span className="text-orange-400">✓</span> Gemini polish & Pro features
+                <span className="text-orange-400">✓</span> Gemini polish &amp; premium features
               </li>
             </ul>
 
