@@ -59,32 +59,44 @@ export function DocsPageClient() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-400/90">Documentation</p>
               <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">ResumeAI</h1>
               <p className="mt-3 max-w-xl text-base leading-relaxed text-zinc-500">
-                How to get started, what each feature does, how scores are calculated, and how we handle your data.
+                How to get started, what each surface does (home scan, resume report, career guide), how scoring works,
+                and how we handle your data.
               </p>
             </header>
 
             <Section id="getting-started" title="Getting Started">
               <P>
-                ResumeAI helps you analyze your resume for ATS compatibility, role fit, and clarity—then edit in a
-                built-in workspace.
+                ResumeAI centers on a fast <strong className="font-medium text-zinc-300">home pipeline</strong>: upload
+                a resume, optionally add a target title and job description, and get a rule-based score with strengths,
+                gaps, and suggestions.
               </P>
               <Ul>
                 <Li>
-                  <strong className="font-medium text-zinc-300">Sign in</strong> with Google (required to upload and
-                  use the editor).
+                  <strong className="font-medium text-zinc-300">Sign in</strong> with Google (required to upload and save
+                  per-account state).
                 </Li>
                 <Li>
                   <strong className="font-medium text-zinc-300">Upload</strong> a PDF, DOCX, or TXT resume from the home
-                  pipeline.
+                  page and run analysis.
                 </Li>
                 <Li>
                   Optionally add a <strong className="font-medium text-zinc-300">target job title</strong> and paste a{" "}
                   <strong className="font-medium text-zinc-300">job description</strong> for keyword and fit signals.
                 </Li>
                 <Li>
-                  Review your <strong className="font-medium text-zinc-300">score</strong> and recruiter-style
-                  insights, then open the <strong className="font-medium text-zinc-300">resume editor</strong> to apply
-                  changes.
+                  After the run, open <strong className="font-medium text-zinc-300">View resume</strong> to see your{" "}
+                  <Link href="/resume-ats" className="font-medium text-orange-400/95 underline-offset-2 hover:underline">
+                    resume &amp; ATS report
+                  </Link>{" "}
+                  (stored scan results and, when enabled, a Gemini JSON ATS report on paid plans).
+                </Li>
+                <Li>
+                  Use the{" "}
+                  <Link href="/editor" className="font-medium text-orange-400/95 underline-offset-2 hover:underline">
+                    Career guide
+                  </Link>{" "}
+                  (<code className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[13px] text-zinc-300">/editor</code>) for
+                  a separate flow: enter comma-separated skills and generate a structured career path with Gemini.
                 </Li>
               </Ul>
             </Section>
@@ -92,28 +104,32 @@ export function DocsPageClient() {
             <Section id="features" title="Features">
               <Ul>
                 <Li>
-                  <strong className="font-medium text-zinc-300">ATS-oriented analysis</strong> — structure, headings,
-                  and keywords that parsers and recruiters expect.
+                  <strong className="font-medium text-zinc-300">ATS-style scan</strong> — rule-based score (0–100),
+                  strengths, gaps, and actionable suggestions from your resume text and optional JD.
                 </Li>
                 <Li>
-                  <strong className="font-medium text-zinc-300">Instant scoring</strong> — a single 0–100 signal plus
-                  strengths, gaps, and quick fixes.
+                  <strong className="font-medium text-zinc-300">Resume &amp; ATS report</strong> —{" "}
+                  <Link href="/resume-ats" className="font-medium text-orange-400/95 underline-offset-2 hover:underline">
+                    /resume-ats
+                  </Link>{" "}
+                  shows the latest stored results; with Gemini polish enabled on a paid plan, you also get a structured
+                  JSON ATS report (score breakdown, suggestions, strengths, summary).
                 </Li>
                 <Li>
-                  <strong className="font-medium text-zinc-300">JD alignment</strong> — compare your resume to a pasted
-                  job description when provided.
+                  <strong className="font-medium text-zinc-300">Career guide</strong> —{" "}
+                  <Link href="/editor" className="font-medium text-orange-400/95 underline-offset-2 hover:underline">
+                    /editor
+                  </Link>{" "}
+                  generates a skills-based career path (Gemini); separate from the upload pipeline.
                 </Li>
                 <Li>
-                  <strong className="font-medium text-zinc-300">Resume editor</strong> — edit text alongside previews
-                  and insights on the same screen.
-                </Li>
-                <Li>
-                  <strong className="font-medium text-zinc-300">Pro: Gemini polish &amp; deep reports</strong> — optional
-                  AI-assisted wording and full reports where enabled (usage limits apply).
+                  <strong className="font-medium text-zinc-300">Gemini polish</strong> — optional on home analysis for
+                  paid plans: enhances the analyze response and triggers the ATS JSON report after your run (usage
+                  limits apply).
                 </Li>
               </Ul>
               <p className="text-zinc-500">
-                Marketing overview:{" "}
+                Short marketing overview:{" "}
                 <Link href="/features" className="font-medium text-orange-400/95 underline-offset-2 hover:underline">
                   Features page
                 </Link>
@@ -133,16 +149,16 @@ export function DocsPageClient() {
                 iterate.
               </P>
               <p className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-zinc-500">
-                Pro-only flows may add Gemini-enhanced suggestions; they still build on the same extracted resume text
-                and rules.
+                Paid plans may add Gemini-enhanced suggestions; they still build on the same extracted resume text and
+                rules.
               </p>
             </Section>
 
             <Section id="pricing" title="Pricing">
               <P>
-                We offer a <strong className="font-medium text-zinc-300">free tier</strong> with core analysis and a{" "}
-                <strong className="font-medium text-zinc-300">Pro</strong> plan for deeper fit, unlimited runs where
-                applicable, and Gemini-powered polish where enabled. Billing may use Razorpay where configured.
+                We offer a <strong className="font-medium text-zinc-300">free tier</strong> with core analysis and paid
+                plans (e.g. <strong className="font-medium text-zinc-300">Pro</strong>) for higher limits, deeper fit,
+                and Gemini polish where enabled. Billing may use Razorpay where configured.
               </P>
               <p>
                 <Link
@@ -156,7 +172,7 @@ export function DocsPageClient() {
 
             <Section id="privacy" title="Privacy">
               <P>
-                Your resume is processed so we can return analysis and editor state. We don’t use your file content for
+                Your resume is processed so we can return analysis, reports, and account-scoped storage. We don’t use your file content for
                 public marketing or third-party advertising. API-backed features (e.g. Gemini) send only the text needed
                 for that request, subject to your plan and our providers’ terms.
               </P>
@@ -171,8 +187,8 @@ export function DocsPageClient() {
                 <div>
                   <h3 className="text-sm font-semibold text-zinc-200">Do I need an account?</h3>
                   <p className="mt-2">
-                    Yes. Sign-in is required to upload resumes and use the editor—so we can protect your data and apply
-                    plan limits fairly.
+                    Yes. Sign-in is required to upload resumes and use the career guide and dashboard—so we can protect
+                    your data and apply plan limits fairly.
                   </p>
                 </div>
                 <div>
@@ -187,10 +203,14 @@ export function DocsPageClient() {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-zinc-200">What does Pro add?</h3>
+                  <h3 className="text-sm font-semibold text-zinc-200">What do paid plans add?</h3>
                   <p className="mt-2">
-                    Typically deeper feedback, Gemini polish where enabled, and higher usage limits—see the pricing page
-                    for your workspace.
+                    Typically higher usage limits, deeper fit signals, and Gemini polish (including the JSON ATS
+                    report on <Link href="/resume-ats" className="font-medium text-orange-400/95 underline-offset-2 hover:underline">resume &amp; ATS</Link>) where enabled—see the{" "}
+                    <Link href="/pricing" className="font-medium text-orange-400/95 underline-offset-2 hover:underline">
+                      pricing page
+                    </Link>
+                    .
                   </p>
                 </div>
                 <div>
@@ -205,9 +225,9 @@ export function DocsPageClient() {
 
             <Section id="about" title="About">
               <P>
-                <strong className="font-medium text-zinc-300">ResumeAI</strong> is built to shorten the gap between a
-                rough draft and a resume you’re confident to send—combining fast ATS-style checks, recruiter-friendly
-                summaries, and an editor so you’re not copying feedback across five tabs.
+                <strong className="font-medium text-zinc-300">ResumeAI</strong> combines fast ATS-style checks on the
+                home pipeline, a dedicated page for your scan and optional Gemini ATS report, and a career guide for
+                skills-based planning—so you can iterate without juggling generic advice in multiple tabs.
               </P>
               <p className="text-zinc-500">
                 Product by Ajeet Gupta · © {new Date().getFullYear()} ResumeAI
