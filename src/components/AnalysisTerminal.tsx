@@ -8,6 +8,8 @@ import { mapRuleAnalysisToEditorPayload } from "@/lib/mapRuleAnalysisToEditor";
 import { saveEditorPayload } from "@/lib/editorSession";
 import type { AnalyzeResult } from "@/lib/analyzer";
 import { getAnalysisStorageKey, type StoredAnalysis } from "@/lib/analysisStorage";
+import { saveStoredAtsReport } from "@/lib/atsReportStorage";
+import type { AtsGeminiReport } from "@/lib/atsGeminiReport";
 
 type LineKind = "command" | "muted" | "accent" | "warning" | "tip";
 
@@ -60,10 +62,11 @@ type AnalysisTerminalProps = {
   jobTitle?: string;
   jobDescription?: string;
   enhanceWithGemini?: boolean;
-  /** Pro users see full recruiter brief; Free users see Score only + upgrade hint. */
+  /** When true: Gemini polish on /api/analyze and ATS JSON report when polish is on */
   isPro?: boolean;
   onAnalysisComplete?: () => void;
-  onOpenEditor?: () => void;
+  /** Opens /resume-ats (ATS report or rule-based scan from your last analysis) */
+  onViewResume?: () => void;
 };
 
 export function AnalysisTerminal({
@@ -72,8 +75,9 @@ export function AnalysisTerminal({
   jobTitle = "",
   jobDescription = "",
   enhanceWithGemini = false,
+  isPro = false,
   onAnalysisComplete,
-  onOpenEditor,
+  onViewResume,
 }: AnalysisTerminalProps) {
   const { user } = useUser();
   const isPreview = runKey === 0;
@@ -82,6 +86,7 @@ export function AnalysisTerminal({
   const [isRunning, setIsRunning] = useState(false);
   const [showEditorCta, setShowEditorCta] = useState(false);
   const [errorDone, setErrorDone] = useState(false);
+  const [atsReportReady, setAtsReportReady] = useState(false);
 
   /* Idle typewriter */
   const [lineIdx, setLineIdx] = useState(0);
@@ -142,6 +147,7 @@ export function AnalysisTerminal({
       setShowEditorCta(false);
       setErrorDone(false);
       setIsRunning(true);
+      setAtsReportReady(false);
 
       const push = (text: string, kind: LineKind) => {
         if (cancelled || runIdRef.current !== id) return;
@@ -281,6 +287,31 @@ export function AnalysisTerminal({
         }
       }
 
+      if (enhanceWithGemini && isPro && uid) {
+        push("→ Gemini ATS deep analysis (JSON)...", "muted");
+        await delay(STEP_MS());
+        try {
+          const atsRes = await fetch("/api/ats-gemini", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+          });
+          const atsJson = (await atsRes.json()) as { report?: AtsGeminiReport; error?: string };
+          if (!atsRes.ok) throw new Error(atsJson.error ?? "ATS analysis failed");
+          if (!atsJson.report) throw new Error("Invalid ATS response");
+          saveStoredAtsReport(uid, { resumeText: text, report: atsJson.report });
+          setAtsReportReady(true);
+          push(`✔ Gemini ATS score: ${atsJson.report.atsScore}/100`, "accent");
+          await delay(STEP_MS());
+        } catch (e) {
+          push(
+            `⚠ ATS Gemini: ${e instanceof Error ? e.message.slice(0, 96) : "failed"}`,
+            "warning"
+          );
+          await delay(STEP_MS());
+        }
+      }
+
       setIsRunning(false);
       setShowEditorCta(true);
       onAnalysisComplete?.();
@@ -291,7 +322,7 @@ export function AnalysisTerminal({
     return () => {
       cancelled = true;
     };
-  }, [isPreview, file, runKey, onAnalysisComplete, jobTitle, jobDescription, enhanceWithGemini, user?.id]);
+  }, [isPreview, file, runKey, onAnalysisComplete, jobTitle, jobDescription, enhanceWithGemini, isPro, user?.id]);
 
   const gutterCount = useMemo(() => {
     if (isPreview) return Math.max(IDLE_SEQUENCE.length, lineIdx + 1);
@@ -384,14 +415,14 @@ export function AnalysisTerminal({
           </div>
         </div>
 
-        {!isPreview && showEditorCta && onOpenEditor && (
+        {!isPreview && showEditorCta && onViewResume && (
           <div className="border-t border-white/10 bg-black/20 px-3 py-3 sm:px-4">
             <button
               type="button"
-              onClick={onOpenEditor}
+              onClick={onViewResume}
               className="w-full rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-semibold text-black transition-all duration-300 hover:bg-orange-400 active:scale-[0.99]"
             >
-              Open Resume Editor
+              {atsReportReady ? "View resume & ATS report" : "View resume"}
             </button>
           </div>
         )}
