@@ -6,6 +6,7 @@ const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/editor(.*)",
   "/resume-analyzing(.*)",
+  "/resume-ats(.*)",
 ]);
 
 /** Can browse without an account (home `/` is NOT listed — it requires sign-in). */
