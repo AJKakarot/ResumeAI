@@ -1,5 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
+import {
+  checkGeminiRateLimit,
+  estimateGeminiTokensFromChars,
+  geminiRateLimitJsonResponse,
+  getClientIp,
+} from "@/lib/geminiRateLimit";
+import { friendlyGeminiErrorMessage, httpStatusForGeminiFailure, isGeminiQuotaOrRateLimitError } from "@/lib/geminiClientError";
+import { resolveGeminiModel } from "@/lib/geminiDefaultModel";
 
 const MAX_USER_CHARS = 14_000;
 const MAX_SYSTEM_CHARS = 6_000;
@@ -39,8 +49,20 @@ export async function POST(req: Request) {
       ? systemPrompt.slice(0, MAX_SYSTEM_CHARS)
       : undefined;
 
-  const modelName =
-    process.env.GEMINI_MODEL?.trim() || "gemini-2.0-flash";
+  const { userId } = await auth();
+  const clerkUser = userId ? await currentUser() : null;
+  const meta = (clerkUser?.publicMetadata ?? undefined) as Record<string, unknown> | undefined;
+  const isPro = Boolean(userId && isPremiumPublicMetadata(meta));
+  const ip = getClientIp(req);
+  const rl = checkGeminiRateLimit({
+    userId: userId ?? null,
+    clientIp: ip,
+    isPro,
+    estimatedTokens: estimateGeminiTokensFromChars(user.length, system?.length ?? 0),
+  });
+  if (!rl.ok) return geminiRateLimitJsonResponse(rl);
+
+  const modelName = resolveGeminiModel(process.env.GEMINI_MODEL);
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -63,9 +85,13 @@ export async function POST(req: Request) {
   } catch (e) {
     const message = e instanceof Error ? e.message : "Gemini request failed";
     console.error("[gemini]", message);
+    const status = httpStatusForGeminiFailure(message);
     return NextResponse.json(
-      { error: message.slice(0, 500) },
-      { status: 502 }
+      {
+        error: friendlyGeminiErrorMessage(message),
+        code: isGeminiQuotaOrRateLimitError(message) ? "GEMINI_QUOTA" : "GEMINI_ERROR",
+      },
+      { status }
     );
   }
 }

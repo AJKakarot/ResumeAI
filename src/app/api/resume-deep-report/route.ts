@@ -3,6 +3,14 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
 import { DEEP_ATS_REPORT_SYSTEM } from "@/lib/prompts/deepAtsReport";
+import {
+  checkGeminiRateLimit,
+  estimateGeminiTokensFromChars,
+  geminiRateLimitJsonResponse,
+  getClientIp,
+} from "@/lib/geminiRateLimit";
+import { friendlyGeminiErrorMessage, httpStatusForGeminiFailure, isGeminiQuotaOrRateLimitError } from "@/lib/geminiClientError";
+import { resolveGeminiModel } from "@/lib/geminiDefaultModel";
 
 export const runtime = "nodejs";
 
@@ -69,10 +77,18 @@ export async function POST(req: Request) {
     jobDescription || "(not provided)",
   ].join("\n");
 
-  const modelName =
-    process.env.GEMINI_DEEP_REPORT_MODEL?.trim() ||
-    process.env.GEMINI_MODEL?.trim() ||
-    "gemini-2.0-flash";
+  const ip = getClientIp(req);
+  const rl = checkGeminiRateLimit({
+    userId,
+    clientIp: ip,
+    isPro: true,
+    estimatedTokens: estimateGeminiTokensFromChars(userPayload.length, DEEP_ATS_REPORT_SYSTEM.length),
+  });
+  if (!rl.ok) return geminiRateLimitJsonResponse(rl);
+
+  const modelName = resolveGeminiModel(
+    process.env.GEMINI_DEEP_REPORT_MODEL?.trim() || process.env.GEMINI_MODEL
+  );
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -102,6 +118,13 @@ export async function POST(req: Request) {
   } catch (e) {
     const message = e instanceof Error ? e.message : "Deep report failed";
     console.error("[resume-deep-report]", message);
-    return NextResponse.json({ error: message.slice(0, 500) }, { status: 502 });
+    const status = httpStatusForGeminiFailure(message);
+    return NextResponse.json(
+      {
+        error: friendlyGeminiErrorMessage(message),
+        code: isGeminiQuotaOrRateLimitError(message) ? "GEMINI_QUOTA" : "GEMINI_ERROR",
+      },
+      { status }
+    );
   }
 }

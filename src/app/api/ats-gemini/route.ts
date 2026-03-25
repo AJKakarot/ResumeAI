@@ -3,6 +3,14 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { buildAtsGeminiUserPrompt, parseAtsGeminiJson } from "@/lib/atsGeminiReport";
 import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
+import {
+  checkGeminiRateLimit,
+  estimateGeminiTokensFromChars,
+  geminiRateLimitJsonResponse,
+  getClientIp,
+} from "@/lib/geminiRateLimit";
+import { friendlyGeminiErrorMessage, httpStatusForGeminiFailure, isGeminiQuotaOrRateLimitError } from "@/lib/geminiClientError";
+import { resolveGeminiModel } from "@/lib/geminiDefaultModel";
 
 export const runtime = "nodejs";
 
@@ -41,8 +49,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "text is required" }, { status: 400 });
   }
 
+  const ip = getClientIp(req);
   const userPrompt = buildAtsGeminiUserPrompt(text);
-  const modelName = process.env.GEMINI_MODEL?.trim() || "gemini-2.0-flash";
+  const rl = checkGeminiRateLimit({
+    userId,
+    clientIp: ip,
+    isPro: true,
+    estimatedTokens: estimateGeminiTokensFromChars(userPrompt.length, 220),
+  });
+  if (!rl.ok) return geminiRateLimitJsonResponse(rl);
+  const modelName = resolveGeminiModel(process.env.GEMINI_MODEL);
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -61,6 +77,14 @@ export async function POST(req: Request) {
   } catch (e) {
     const message = e instanceof Error ? e.message : "ATS Gemini request failed";
     console.error("[ats-gemini]", message);
-    return NextResponse.json({ error: message.slice(0, 500) }, { status: 502 });
+    const friendly = friendlyGeminiErrorMessage(message);
+    const status = httpStatusForGeminiFailure(message);
+    return NextResponse.json(
+      {
+        error: friendly,
+        code: isGeminiQuotaOrRateLimitError(message) ? "GEMINI_QUOTA" : "GEMINI_ERROR",
+      },
+      { status }
+    );
   }
 }

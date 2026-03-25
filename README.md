@@ -105,7 +105,7 @@ npm install
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client-safe access | Supabase anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Yes** for sync, resumes, uploads | Server-only; never expose to the client |
 | `GEMINI_API_KEY` | **Yes** for AI demo (Analyze / Tailor / Cover Letter) | Server-only — [Google AI Studio](https://aistudio.google.com/apikey) |
-| `GEMINI_MODEL` | Optional | Defaults to `gemini-2.0-flash`; use `gemini-1.5-flash` if needed |
+| `GEMINI_MODEL` | Optional | Defaults to `gemini-2.5-flash` (see `src/lib/geminiDefaultModel.ts`) |
 | `DATABASE_URL` | Optional | Direct Postgres (`src/lib/db.ts`) if you use SQL helpers |
 
 > **Note:** If `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is missing, the app still **builds**; the navbar shows a disabled sign-in placeholder.

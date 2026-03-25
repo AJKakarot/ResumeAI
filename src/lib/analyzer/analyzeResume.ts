@@ -26,6 +26,8 @@ export type AnalyzeResult = {
   jdCoverage?: number;
   scanMode?: "rule" | "rule+gemini";
   aiSuggestions?: string[];
+  /** Set by /api/analyze: concise output for free, full rule+optional Gemini for Pro */
+  analysisTier?: "free" | "pro";
 };
 
 function normalizeSkill(s: string): string {

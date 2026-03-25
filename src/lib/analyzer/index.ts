@@ -6,3 +6,4 @@ export {
   type AnalyzeResult,
   type AnalyzeOptions,
 } from "./analyzeResume";
+export { applyFreeTierSummary, withProTier, type AnalysisTier } from "./tieredAnalysis";

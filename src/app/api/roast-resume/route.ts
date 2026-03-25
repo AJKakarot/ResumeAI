@@ -2,6 +2,14 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
+import {
+  checkGeminiRateLimit,
+  estimateGeminiTokensFromChars,
+  geminiRateLimitJsonResponse,
+  getClientIp,
+} from "@/lib/geminiRateLimit";
+import { friendlyGeminiErrorMessage, httpStatusForGeminiFailure, isGeminiQuotaOrRateLimitError } from "@/lib/geminiClientError";
+import { resolveGeminiModel } from "@/lib/geminiDefaultModel";
 
 export const runtime = "nodejs";
 
@@ -47,10 +55,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "text is required" }, { status: 400 });
   }
 
-  const modelName =
-    process.env.GEMINI_ROAST_MODEL?.trim() ||
-    process.env.GEMINI_MODEL?.trim() ||
-    "gemini-2.0-flash";
+  const slice = text.slice(0, MAX_TEXT);
+  const ip = getClientIp(req);
+  const rl = checkGeminiRateLimit({
+    userId,
+    clientIp: ip,
+    isPro: true,
+    estimatedTokens: estimateGeminiTokensFromChars(slice.length, ROAST_SYSTEM.length),
+  });
+  if (!rl.ok) return geminiRateLimitJsonResponse(rl);
+
+  const modelName = resolveGeminiModel(
+    process.env.GEMINI_ROAST_MODEL?.trim() || process.env.GEMINI_MODEL
+  );
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -59,7 +76,7 @@ export async function POST(req: Request) {
       systemInstruction: ROAST_SYSTEM,
     });
 
-    const result = await model.generateContent(text.slice(0, MAX_TEXT));
+    const result = await model.generateContent(slice);
     const roast = result.response.text();
 
     if (!roast?.trim()) {
@@ -73,6 +90,13 @@ export async function POST(req: Request) {
   } catch (e) {
     const message = e instanceof Error ? e.message : "Roast request failed";
     console.error("[roast-resume]", message);
-    return NextResponse.json({ error: message.slice(0, 500) }, { status: 502 });
+    const status = httpStatusForGeminiFailure(message);
+    return NextResponse.json(
+      {
+        error: friendlyGeminiErrorMessage(message),
+        code: isGeminiQuotaOrRateLimitError(message) ? "GEMINI_QUOTA" : "GEMINI_ERROR",
+      },
+      { status }
+    );
   }
 }

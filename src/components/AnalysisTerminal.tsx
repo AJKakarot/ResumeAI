@@ -228,50 +228,62 @@ export function AnalysisTerminal({
       await delay(STEP_MS());
       push(`→ Role: ${data.category}${jobTitle.trim() ? ` · target: ${jobTitle.trim().slice(0, 48)}` : ""}`, "accent");
       await delay(STEP_MS());
-      push(`→ matched skills: ${data.matchedSkills.length}`, "muted");
-      await delay(STEP_MS());
-      const missing =
-        data.missingSkills.length > 0 ? data.missingSkills.join(", ") : "(none)";
-      push(`→ missing skills: ${missing}`, "warning");
-      await delay(STEP_MS());
 
-      if (jobDescription.trim() && data.jdCoverage !== undefined) {
-        push(
-          `→ JD keyword coverage: ${Math.round(data.jdCoverage * 100)}%`,
-          "muted"
-        );
-        await delay(STEP_MS());
-      }
-      if (data.jdMatchedKeywords && data.jdMatchedKeywords.length > 0) {
-        push(
-          `→ JD matched terms: ${data.jdMatchedKeywords.slice(0, 10).join(", ")}`,
-          "muted"
-        );
-        await delay(STEP_MS());
-      }
-      if (data.jdMissingKeywords && data.jdMissingKeywords.length > 0) {
-        push(
-          `→ JD gaps to add (if true): ${data.jdMissingKeywords.slice(0, 10).join(", ")}`,
-          "warning"
-        );
-        await delay(STEP_MS());
-      }
-      if (data.scanMode === "rule+gemini") {
-        push("→ scan: rules + Gemini extras", "accent");
-        await delay(STEP_MS());
-      }
+      const isFreeTier = data.analysisTier === "free";
 
-      for (const s of data.suggestions) {
-        push(`💡 ${s}`, "tip");
+      if (isFreeTier) {
+        push("→ Free plan: score + top insights (upgrade for full gap analysis & Gemini polish)", "muted");
         await delay(STEP_MS());
-      }
-      for (const w of data.weaknesses) {
-        push(`⚠ ${w}`, "warning");
+        for (const s of data.suggestions) {
+          push(`💡 ${s}`, "tip");
+          await delay(STEP_MS());
+        }
+      } else {
+        push(`→ matched skills: ${data.matchedSkills.length}`, "muted");
         await delay(STEP_MS());
-      }
-      for (const s of data.aiSuggestions ?? []) {
-        push(`✨ ${s}`, "tip");
+        const missing =
+          data.missingSkills.length > 0 ? data.missingSkills.join(", ") : "(none)";
+        push(`→ missing skills: ${missing}`, "warning");
         await delay(STEP_MS());
+
+        if (jobDescription.trim() && data.jdCoverage !== undefined) {
+          push(
+            `→ JD keyword coverage: ${Math.round(data.jdCoverage * 100)}%`,
+            "muted"
+          );
+          await delay(STEP_MS());
+        }
+        if (data.jdMatchedKeywords && data.jdMatchedKeywords.length > 0) {
+          push(
+            `→ JD matched terms: ${data.jdMatchedKeywords.slice(0, 10).join(", ")}`,
+            "muted"
+          );
+          await delay(STEP_MS());
+        }
+        if (data.jdMissingKeywords && data.jdMissingKeywords.length > 0) {
+          push(
+            `→ JD gaps to add (if true): ${data.jdMissingKeywords.slice(0, 10).join(", ")}`,
+            "warning"
+          );
+          await delay(STEP_MS());
+        }
+        if (data.scanMode === "rule+gemini") {
+          push("→ scan: rules + Gemini extras", "accent");
+          await delay(STEP_MS());
+        }
+
+        for (const s of data.suggestions) {
+          push(`💡 ${s}`, "tip");
+          await delay(STEP_MS());
+        }
+        for (const w of data.weaknesses) {
+          push(`⚠ ${w}`, "warning");
+          await delay(STEP_MS());
+        }
+        for (const s of data.aiSuggestions ?? []) {
+          push(`✨ ${s}`, "tip");
+          await delay(STEP_MS());
+        }
       }
 
       const stored: StoredAnalysis = { ...data, resumeText: text, jobTitle, jobDescription };
