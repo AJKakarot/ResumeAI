@@ -10,6 +10,9 @@ import type { AnalyzeResult } from "@/lib/analyzer";
 import { getAnalysisStorageKey, type StoredAnalysis } from "@/lib/analysisStorage";
 import { saveStoredAtsReport } from "@/lib/atsReportStorage";
 import type { AtsGeminiReport } from "@/lib/atsGeminiReport";
+import { looksLikeResumeText, RESUME_LIKENESS_ERROR } from "@/lib/looksLikeResume";
+import { ANALYZE_API_ROTATING_TOAST_ID, useRotatingLoadingToast } from "@/lib/rotatingLoadingToast";
+import { brandToast } from "@/lib/toast";
 
 type LineKind = "command" | "muted" | "accent" | "warning" | "tip";
 
@@ -87,6 +90,10 @@ export function AnalysisTerminal({
   const [showEditorCta, setShowEditorCta] = useState(false);
   const [errorDone, setErrorDone] = useState(false);
   const [atsReportReady, setAtsReportReady] = useState(false);
+  /** True while `/api/analyze` or `/api/ats-gemini` request is in flight (shows rotating tips). */
+  const [waitingOnRemoteApi, setWaitingOnRemoteApi] = useState(false);
+  /** Animated ellipsis while pipeline is busy (e.g. waiting on /api/analyze). */
+  const [generatingDots, setGeneratingDots] = useState(".");
 
   /* Idle typewriter */
   const [lineIdx, setLineIdx] = useState(0);
@@ -94,6 +101,22 @@ export function AnalysisTerminal({
   const runIdRef = useRef(0);
   const terminalRootRef = useRef<HTMLDivElement>(null);
   const scrollContentRef = useRef<HTMLDivElement>(null);
+
+  useRotatingLoadingToast(waitingOnRemoteApi, ANALYZE_API_ROTATING_TOAST_ID);
+
+  useEffect(() => {
+    if (isPreview || !isRunning) {
+      setGeneratingDots(".");
+      return;
+    }
+    const frames = [".", "..", "..."];
+    let i = 0;
+    const id = window.setInterval(() => {
+      i = (i + 1) % frames.length;
+      setGeneratingDots(frames[i] ?? ".");
+    }, 420);
+    return () => window.clearInterval(id);
+  }, [isPreview, isRunning]);
 
   /** Keep latest output pinned to bottom inside fixed-height panel */
   useEffect(() => {
@@ -147,6 +170,7 @@ export function AnalysisTerminal({
       setShowEditorCta(false);
       setErrorDone(false);
       setIsRunning(true);
+      setWaitingOnRemoteApi(false);
       setAtsReportReady(false);
 
       const push = (text: string, kind: LineKind) => {
@@ -198,23 +222,42 @@ export function AnalysisTerminal({
         return;
       }
 
+      if (!looksLikeResumeText(text)) {
+        push("✖ not a resume — add experience, skills, projects, or education", "warning");
+        brandToast(RESUME_LIKENESS_ERROR);
+        setIsRunning(false);
+        setErrorDone(true);
+        onAnalysisComplete?.();
+        return;
+      }
+
       let data: AnalyzeResult;
       try {
-        const res = await fetch("/api/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text,
-            jobTitle,
-            jobDescription,
-            enhanceWithGemini,
-          }),
-        });
-        const j = (await res.json()) as AnalyzeResult & { error?: string };
-        if (!res.ok) throw new Error(j.error ?? "analyze failed");
-        data = j as AnalyzeResult;
-      } catch {
-        push("✖ analysis request failed", "warning");
+        setWaitingOnRemoteApi(true);
+        try {
+          const res = await fetch("/api/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text,
+              jobTitle,
+              jobDescription,
+              enhanceWithGemini,
+            }),
+          });
+          const j = (await res.json()) as AnalyzeResult & { error?: string };
+          if (!res.ok) throw new Error(j.error ?? "analyze failed");
+          data = j as AnalyzeResult;
+        } finally {
+          setWaitingOnRemoteApi(false);
+        }
+      } catch (e) {
+        const msg =
+          e instanceof Error ? e.message.slice(0, 200) : "analysis request failed";
+        push(`✖ ${msg}`, "warning");
+        if (msg.includes("doesn't look like a resume")) {
+          brandToast(RESUME_LIKENESS_ERROR);
+        }
         setIsRunning(false);
         setErrorDone(true);
         onAnalysisComplete?.();
@@ -303,18 +346,23 @@ export function AnalysisTerminal({
         push("→ Gemini ATS deep analysis (JSON)...", "muted");
         await delay(STEP_MS());
         try {
-          const atsRes = await fetch("/api/ats-gemini", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text }),
-          });
-          const atsJson = (await atsRes.json()) as { report?: AtsGeminiReport; error?: string };
-          if (!atsRes.ok) throw new Error(atsJson.error ?? "ATS analysis failed");
-          if (!atsJson.report) throw new Error("Invalid ATS response");
-          saveStoredAtsReport(uid, { resumeText: text, report: atsJson.report });
-          setAtsReportReady(true);
-          push(`✔ Gemini ATS score: ${atsJson.report.atsScore}/100`, "accent");
-          await delay(STEP_MS());
+          setWaitingOnRemoteApi(true);
+          try {
+            const atsRes = await fetch("/api/ats-gemini", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text }),
+            });
+            const atsJson = (await atsRes.json()) as { report?: AtsGeminiReport; error?: string };
+            if (!atsRes.ok) throw new Error(atsJson.error ?? "ATS analysis failed");
+            if (!atsJson.report) throw new Error("Invalid ATS response");
+            saveStoredAtsReport(uid, { resumeText: text, report: atsJson.report });
+            setAtsReportReady(true);
+            push(`✔ Gemini ATS score: ${atsJson.report.atsScore}/100`, "accent");
+            await delay(STEP_MS());
+          } finally {
+            setWaitingOnRemoteApi(false);
+          }
         } catch (e) {
           push(
             `⚠ ATS Gemini: ${e instanceof Error ? e.message.slice(0, 96) : "failed"}`,
@@ -413,12 +461,20 @@ export function AnalysisTerminal({
                   </p>
                 ))}
                 {isRunning && (
-                  <p className="text-zinc-500">
+                  <p
+                    className="text-zinc-500"
+                    aria-live="polite"
+                    aria-busy="true"
+                  >
+                    <span className="text-orange-400/90">→ generating response</span>
+                    <span className="ml-0.5 inline-block min-w-[1.25em] font-mono text-zinc-400 tabular-nums">
+                      {generatingDots}
+                    </span>
                     <span
-                      className="inline-block h-[1.1em] w-px animate-pulse bg-orange-500/80 align-middle motion-reduce:animate-none"
+                      className="ml-1 inline-block h-[1.1em] w-px animate-pulse bg-orange-500/80 align-middle motion-reduce:animate-none"
                       aria-hidden
-                    />{" "}
-                    <span className="sr-only">Running</span>
+                    />
+                    <span className="sr-only">Generating response, please wait.</span>
                   </p>
                 )}
               </>
