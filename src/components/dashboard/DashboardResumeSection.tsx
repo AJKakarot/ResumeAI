@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
 import { FREE_PLAN_MAX_RESUMES } from "@/lib/planLimits";
@@ -35,27 +35,37 @@ export function DashboardResumeSection() {
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const reduce = useReducedMotion();
+  /** Avoid duplicate toast when sync + Strict Mode or double navigation fire twice. */
+  const lastErrorToastRef = useRef<{ msg: string; at: number } | null>(null);
+
+  const toastErrorOnce = useCallback((msg: string) => {
+    const now = Date.now();
+    const prev = lastErrorToastRef.current;
+    if (prev && prev.msg === msg && now - prev.at < 4000) return;
+    lastErrorToastRef.current = { msg, at: now };
+    errorToast(msg);
+  }, []);
 
   const syncAndFetch = useCallback(async () => {
     if (!user) return;
     const sync = await fetch("/api/users/sync", { method: "POST" });
     if (!sync.ok) {
       const j = (await sync.json().catch(() => ({}))) as { error?: string };
-      errorToast(j.error ?? "Sync failed");
+      toastErrorOnce(j.error ?? "Sync failed");
       setLoading(false);
       return;
     }
     const r = await fetch("/api/resumes");
     if (!r.ok) {
       const j = (await r.json().catch(() => ({}))) as { error?: string };
-      errorToast(j.error ?? "Failed to load resumes");
+      toastErrorOnce(j.error ?? "Failed to load resumes");
       setLoading(false);
       return;
     }
     const j = (await r.json()) as { resumes?: ResumeRow[] };
     setResumes(j.resumes ?? []);
     setLoading(false);
-  }, [user]);
+  }, [user, toastErrorOnce]);
 
   useEffect(() => {
     if (!isLoaded || !user) return;

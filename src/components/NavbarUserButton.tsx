@@ -2,6 +2,7 @@
 
 import { UserButton, useUser } from "@clerk/nextjs";
 import { getUserPlanLabel, isPremiumPublicMetadata } from "@/lib/clerkPremium";
+import { PlanBadge } from "@/components/PlanBadge";
 
 /** Razorpay brand blue (marketing / checkout alignment) */
 const RZP_BLUE = "#3395FF";
@@ -17,7 +18,8 @@ export function NavbarUserButton() {
 
   return (
     <div className="flex items-center gap-2">
-      {/* Pro: Rzp blue ring + blurred halo + layered glow (Free: neutral ring) */}
+      <PlanBadge isPro={isPro} className="hidden sm:inline-flex" />
+      {/* Pro: Rzp blue ring + blurred halo + layered glow (Free: sky-tinted ring) */}
       <div className="relative shrink-0">
         {isPro ? (
           <span
@@ -29,9 +31,9 @@ export function NavbarUserButton() {
           className={
             isPro
               ? "relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#3395FF] to-[#2563eb] p-[2px] shadow-[0_0_12px_rgba(51,149,255,0.5),0_0_24px_rgba(51,149,255,0.32),0_0_40px_rgba(51,149,255,0.18),0_0_56px_rgba(51,149,255,0.08)]"
-              : "relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full ring-1 ring-zinc-700 ring-offset-2 ring-offset-black"
+              : "relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full ring-1 ring-sky-700/50 ring-offset-2 ring-offset-black"
           }
-          title={isPro ? "Pro plan" : undefined}
+          title={isPro ? "Pro plan" : "Free plan"}
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-black [&_.cl-userButtonAvatarImage]:h-full [&_.cl-userButtonAvatarImage]:w-full [&_.cl-userButtonAvatarImage]:object-cover">
             <UserButton

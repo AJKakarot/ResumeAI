@@ -1,10 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { saveStoredCareerGuide, loadStoredCareerGuide, type StoredCareerGuideSession } from "@/lib/careerGuideStorage";
+import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
+import { replaceLoadingWithError, replaceLoadingWithSuccess } from "@/lib/toast";
+import { CAREER_GUIDE_ROTATING_TOAST_ID, useRotatingLoadingToast } from "@/lib/rotatingLoadingToast";
+import {
+  saveStoredCareerGuide,
+  loadStoredCareerGuide,
+  clearStoredCareerGuide,
+  type StoredCareerGuideSession,
+} from "@/lib/careerGuideStorage";
 import { EditorNavbar } from "@/components/editor/EditorNavbar";
 import { EditorPageSkeleton } from "@/components/editor/EditorPageSkeleton";
 import { SkillsCareerGuideForm } from "@/components/editor/SkillsCareerGuideForm";
@@ -18,6 +26,24 @@ export function PostAnalysisEditorClient() {
   const [geminiSession, setGeminiSession] = useState<StoredCareerGuideSession | null>(null);
   const [guideLoading, setGuideLoading] = useState(false);
   const [guideError, setGuideError] = useState<string | null>(null);
+  const [enhanceWithGemini, setEnhanceWithGemini] = useState(true);
+  const prevCanUseGeminiRef = useRef<boolean | null>(null);
+
+  useRotatingLoadingToast(guideLoading, CAREER_GUIDE_ROTATING_TOAST_ID, {
+    dismissWhenInactive: false,
+  });
+
+  const meta = user?.publicMetadata as Record<string, unknown> | undefined;
+  const canUseGeminiPolish = Boolean(user?.id && isPremiumPublicMetadata(meta));
+
+  useEffect(() => {
+    if (!canUseGeminiPolish) {
+      setEnhanceWithGemini(false);
+    } else if (prevCanUseGeminiRef.current === false) {
+      setEnhanceWithGemini(true);
+    }
+    prevCanUseGeminiRef.current = canUseGeminiPolish;
+  }, [canUseGeminiPolish]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -43,7 +69,7 @@ export function PostAnalysisEditorClient() {
       const res = await fetch("/api/career-guide", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ skills }),
+        body: JSON.stringify({ skills, useGeminiPolish: enhanceWithGemini }),
       });
       const j = (await res.json()) as { guide?: StoredCareerGuideSession["guide"]; skillsUsed?: string; error?: string };
       if (!res.ok) throw new Error(j.error ?? "Could not generate career guide.");
@@ -55,12 +81,22 @@ export function PostAnalysisEditorClient() {
       const uid = user?.id;
       if (uid) saveStoredCareerGuide(uid, session);
       setGeminiSession(session);
+      replaceLoadingWithSuccess(CAREER_GUIDE_ROTATING_TOAST_ID, "Career guide ready");
     } catch (e) {
-      setGuideError(e instanceof Error ? e.message : "Something went wrong.");
+      const msg = e instanceof Error ? e.message : "Something went wrong.";
+      setGuideError(msg);
+      replaceLoadingWithError(CAREER_GUIDE_ROTATING_TOAST_ID, msg);
     } finally {
       setGuideLoading(false);
     }
-  }, [skillsInput, user?.id]);
+  }, [skillsInput, user?.id, enhanceWithGemini]);
+
+  const clearGuideResponse = useCallback(() => {
+    setGeminiSession(null);
+    setGuideError(null);
+    const uid = user?.id;
+    if (uid) clearStoredCareerGuide(uid);
+  }, [user?.id]);
 
   if (!booted) {
     return <EditorPageSkeleton />;
@@ -91,6 +127,12 @@ export function PostAnalysisEditorClient() {
             onGenerate={generateCareerGuide}
             loading={guideLoading}
             error={guideError}
+            hasGuideResponse={Boolean(geminiSession)}
+            onClearResponse={clearGuideResponse}
+            showGeminiPolishRow={Boolean(user?.id)}
+            canUseGeminiPolish={canUseGeminiPolish}
+            enhanceWithGemini={enhanceWithGemini}
+            onEnhanceWithGeminiChange={setEnhanceWithGemini}
           />
 
           {geminiSession ? (

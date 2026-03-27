@@ -14,18 +14,19 @@ type GoogleSignInButtonProps = {
 
 export function GoogleSignInButton({ className, children, signUp = false }: GoogleSignInButtonProps) {
   const hasKey = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const defaultLabel = "Continue with Google";
 
   if (!hasKey) {
     return (
       <button type="button" className={className} disabled title="Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY">
-        {children ?? "Continue with Google"}
+        {children ?? defaultLabel}
       </button>
     );
   }
 
   const btn = (
     <button type="button" className={className}>
-      {children ?? "Continue with Google"}
+      {children ?? defaultLabel}
     </button>
   );
 
