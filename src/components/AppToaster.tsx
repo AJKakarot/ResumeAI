@@ -16,6 +16,7 @@ export function AppToaster() {
           borderRadius: "0.5rem",
           boxShadow: "0 12px 40px -12px rgba(0, 0, 0, 0.55)",
           border: "1px solid rgba(255, 255, 255, 0.08)",
+          borderLeft: "3px solid #f97316",
         },
         success: {
           iconTheme: {
@@ -25,7 +26,7 @@ export function AppToaster() {
         },
         error: {
           iconTheme: {
-            primary: "#ef4444",
+            primary: "#f97316",
             secondary: "#18181b",
           },
         },

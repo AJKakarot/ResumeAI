@@ -12,14 +12,26 @@ const baseStyle: CSSProperties = {
   maxWidth: "min(100vw - 2rem, 22rem)",
 };
 
+/** Orange accent — same as login success (`successToast`). */
+const brandAccentStyle: CSSProperties = {
+  ...baseStyle,
+  borderLeft: "3px solid #f97316",
+};
+
 export function successToast(message: string) {
   return toast.success(message, {
     duration: 3500,
     position: "top-right",
-    style: {
-      ...baseStyle,
-      borderLeft: "3px solid #f97316",
-    },
+    style: brandAccentStyle,
+  });
+}
+
+/** Same chrome as login success; no success icon — for neutral notices (e.g. invalid upload). */
+export function brandToast(message: string) {
+  return toast(message, {
+    duration: 4000,
+    position: "top-right",
+    style: brandAccentStyle,
   });
 }
 
@@ -27,9 +39,32 @@ export function errorToast(message: string) {
   return toast.error(message, {
     duration: 5000,
     position: "top-right",
-    style: {
-      ...baseStyle,
-      borderLeft: "3px solid #ef4444",
-    },
+    style: brandAccentStyle,
+  });
+}
+
+/** Long-running operations: show immediately; replace with success/error when done (same `id`). */
+export function loadingToast(message: string) {
+  return toast.loading(message, {
+    position: "top-right",
+    style: brandAccentStyle,
+  });
+}
+
+export function replaceLoadingWithSuccess(id: string, message: string) {
+  toast.success(message, {
+    id,
+    duration: 3500,
+    position: "top-right",
+    style: brandAccentStyle,
+  });
+}
+
+export function replaceLoadingWithError(id: string, message: string) {
+  toast.error(message, {
+    id,
+    duration: 5000,
+    position: "top-right",
+    style: brandAccentStyle,
   });
 }
