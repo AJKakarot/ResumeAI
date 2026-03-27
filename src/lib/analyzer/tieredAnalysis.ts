@@ -19,6 +19,10 @@ export function applyFreeTierSummary(full: AnalyzeResult): AnalyzeResult {
     insights.push(t);
   };
 
+  for (const ai of full.aiSuggestions ?? []) {
+    push(ai);
+    if (insights.length >= MAX_FREE_INSIGHTS) break;
+  }
   for (const w of full.weaknesses) {
     push(w);
     if (insights.length >= MAX_FREE_INSIGHTS) break;
@@ -49,7 +53,7 @@ export function applyFreeTierSummary(full: AnalyzeResult): AnalyzeResult {
     jdMatchedKeywords: full.jdMatchedKeywords?.slice(0, MAX_FREE_JD_TERMS),
     jdMissingKeywords: full.jdMissingKeywords?.slice(0, MAX_FREE_JD_TERMS),
     aiSuggestions: undefined,
-    scanMode: "rule",
+    scanMode: full.scanMode ?? "rule",
   };
 }
 

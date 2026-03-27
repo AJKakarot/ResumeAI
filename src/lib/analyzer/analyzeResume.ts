@@ -24,7 +24,7 @@ export type AnalyzeResult = {
   jdMatchedKeywords?: string[];
   jdMissingKeywords?: string[];
   jdCoverage?: number;
-  scanMode?: "rule" | "rule+gemini";
+  scanMode?: "rule" | "rule+gemini" | "rule+huggingface";
   aiSuggestions?: string[];
   /** Set by /api/analyze: concise output for free, full rule+optional Gemini for Pro */
   analysisTier?: "free" | "pro";
