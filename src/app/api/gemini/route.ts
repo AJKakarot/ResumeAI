@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
@@ -9,24 +8,17 @@ import {
   getClientIp,
 } from "@/lib/geminiRateLimit";
 import { friendlyGeminiErrorMessage, httpStatusForGeminiFailure, isGeminiQuotaOrRateLimitError } from "@/lib/geminiClientError";
-import { resolveGeminiModel } from "@/lib/geminiDefaultModel";
+import { generateTextBySubscription } from "@/lib/llmProviderGenerate";
+import { getHuggingFaceToken } from "@/lib/huggingfaceInference";
 
 const MAX_USER_CHARS = 14_000;
 const MAX_SYSTEM_CHARS = 6_000;
 
 /**
- * Server-only Gemini proxy — keeps GEMINI_API_KEY off the client.
- * Used by `fetchResumeInsights` (resume analyzing flow) and similar callers.
+ * Server-only LLM proxy: Pro → Gemini, free/anonymous → Hugging Face Inference API.
+ * Used by `fetchResumeInsights` and similar callers.
  */
 export async function POST(req: Request) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey?.trim()) {
-    return NextResponse.json(
-      { error: "GEMINI_API_KEY is not set. Add it to .env.local (see .env.example)." },
-      { status: 503 }
-    );
-  }
-
   let body: unknown;
   try {
     body = await req.json();
@@ -53,6 +45,24 @@ export async function POST(req: Request) {
   const clerkUser = userId ? await currentUser() : null;
   const meta = (clerkUser?.publicMetadata ?? undefined) as Record<string, unknown> | undefined;
   const isPro = Boolean(userId && isPremiumPublicMetadata(meta));
+
+  if (isPro && !process.env.GEMINI_API_KEY?.trim()) {
+    return NextResponse.json(
+      { error: "GEMINI_API_KEY is not set. Add it to .env.local (see .env.example).", code: "GEMINI_CONFIG" },
+      { status: 503 }
+    );
+  }
+  if (!isPro && !getHuggingFaceToken()) {
+    return NextResponse.json(
+      {
+        error:
+          "Free-tier AI uses Hugging Face. Set HUGGINGFACE_API_TOKEN in .env.local (see .env.example). Optional: HUGGINGFACE_MODEL to override the default Mistral-7B-Instruct-v0.2 model.",
+        code: "HF_CONFIG",
+      },
+      { status: 503 }
+    );
+  }
+
   const ip = getClientIp(req);
   const rl = checkGeminiRateLimit({
     userId: userId ?? null,
@@ -62,36 +72,38 @@ export async function POST(req: Request) {
   });
   if (!rl.ok) return geminiRateLimitJsonResponse(rl);
 
-  const modelName = resolveGeminiModel(process.env.GEMINI_MODEL);
-
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: modelName,
-      ...(system ? { systemInstruction: system } : {}),
+    const { text } = await generateTextBySubscription({
+      isPro,
+      systemInstruction: system,
+      userPrompt: user,
+      maxNewTokens: 2048,
     });
-
-    const result = await model.generateContent(user);
-    const text = result.response.text();
 
     if (!text?.trim()) {
       return NextResponse.json(
-        { error: "Empty response from Gemini. Try again or check GEMINI_MODEL." },
+        { error: "Empty model response. Try again or check provider configuration.", code: "LLM_EMPTY" },
         { status: 502 }
       );
     }
 
     return NextResponse.json({ text });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Gemini request failed";
+    const message = e instanceof Error ? e.message : "LLM request failed";
     console.error("[gemini]", message);
-    const status = httpStatusForGeminiFailure(message);
+    if (isPro) {
+      const status = httpStatusForGeminiFailure(message);
+      return NextResponse.json(
+        {
+          error: friendlyGeminiErrorMessage(message),
+          code: isGeminiQuotaOrRateLimitError(message) ? "GEMINI_QUOTA" : "GEMINI_ERROR",
+        },
+        { status }
+      );
+    }
     return NextResponse.json(
-      {
-        error: friendlyGeminiErrorMessage(message),
-        code: isGeminiQuotaOrRateLimitError(message) ? "GEMINI_QUOTA" : "GEMINI_ERROR",
-      },
-      { status }
+      { error: message.length > 400 ? `${message.slice(0, 397)}...` : message, code: "HF_ERROR" },
+      { status: 502 }
     );
   }
 }
