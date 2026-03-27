@@ -36,3 +36,14 @@ export function saveStoredCareerGuide(userId: string, data: StoredCareerGuideSes
     /* quota */
   }
 }
+
+export function clearStoredCareerGuide(userId: string | null | undefined): void {
+  if (typeof window === "undefined" || !userId) return;
+  const key = getCareerGuideStorageKey(userId);
+  if (!key) return;
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    /* ignore */
+  }
+}
