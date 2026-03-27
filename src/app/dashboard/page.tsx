@@ -5,8 +5,9 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { getUserPlanLabel, isPremiumPublicMetadata } from "@/lib/clerkPremium";
+import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
 import { Navbar } from "@/components/Navbar";
+import { PlanBadge } from "@/components/PlanBadge";
 import { DashboardResumeSection } from "@/components/dashboard/DashboardResumeSection";
 
 const ease = [0.25, 0.1, 0.25, 1] as const;
@@ -47,7 +48,6 @@ export default function DashboardPage() {
 
   const meta = user.publicMetadata as Record<string, unknown> | undefined;
   const isPro = isPremiumPublicMetadata(meta);
-  const planLabel = getUserPlanLabel(meta);
 
   return (
     <div className="relative min-h-[100dvh] overflow-hidden bg-black text-zinc-100">
@@ -79,15 +79,7 @@ export default function DashboardPage() {
           >
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">Dashboard</p>
-              <span
-                className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                  isPro
-                    ? "border-sky-500/50 bg-sky-500/15 text-sky-300 shadow-[0_0_20px_-4px_rgba(56,189,248,0.45)]"
-                    : "border-zinc-600 bg-zinc-900/80 text-zinc-400"
-                }`}
-              >
-                {planLabel} plan
-              </span>
+              <PlanBadge isPro={isPro} />
             </div>
             <h1 className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-3xl">Welcome back</h1>
             <p className="mt-3 text-sm leading-relaxed text-zinc-400">
@@ -95,7 +87,7 @@ export default function DashboardPage() {
             </p>
             {!isPro && (
               <p className="mt-2 text-xs text-zinc-500">
-                You&apos;re on the <span className="text-zinc-400">Free</span> plan — up to 2 resumes on the dashboard, basic analysis limits, and no Gemini polish until you upgrade.{" "}
+                You&apos;re on the <span className="font-medium text-sky-400/95">Free</span> plan — up to 2 resumes on the dashboard, basic analysis limits, and no Gemini polish until you upgrade.{" "}
                 <Link href="/pricing" className="font-medium text-sky-400/95 underline-offset-2 hover:underline">
                   View pricing
                 </Link>
