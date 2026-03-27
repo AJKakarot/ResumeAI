@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { buildCareerAdvisorPrompt, parseGeminiCareerGuideJson } from "@/lib/careerGuideGemini";
@@ -10,19 +9,13 @@ import {
   getClientIp,
 } from "@/lib/geminiRateLimit";
 import { friendlyGeminiErrorMessage, httpStatusForGeminiFailure, isGeminiQuotaOrRateLimitError } from "@/lib/geminiClientError";
-import { resolveGeminiModel } from "@/lib/geminiDefaultModel";
+import { generateTextBySubscription } from "@/lib/llmProviderGenerate";
+import { getHuggingFaceToken } from "@/lib/huggingfaceInference";
 
 const MAX_SKILLS_CHARS = 4_000;
 
+/** Pro + `useGeminiPolish` (default true) → Gemini. Otherwise → Hugging Face. */
 export async function POST(req: Request) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey?.trim()) {
-    return NextResponse.json(
-      { error: "GEMINI_API_KEY is not set. Add it to .env.local (see .env.example)." },
-      { status: 503 }
-    );
-  }
-
   let body: unknown;
   try {
     body = await req.json();
@@ -30,14 +23,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const skills =
-    typeof (body as { skills?: unknown }).skills === "string"
-      ? (body as { skills: string }).skills.trim()
-      : "";
+  const b = body as { skills?: unknown; useGeminiPolish?: unknown };
+
+  const skills = typeof b.skills === "string" ? b.skills.trim() : "";
 
   if (!skills) {
     return NextResponse.json({ error: "skills is required (comma-separated list)." }, { status: 400 });
   }
+
+  /** Pro only: when false, use Hugging Face like free tier. Omitted defaults to true. */
+  const useGeminiPolish = typeof b.useGeminiPolish === "boolean" ? b.useGeminiPolish : true;
 
   const skillsTruncated = skills.slice(0, MAX_SKILLS_CHARS);
   const userPrompt = buildCareerAdvisorPrompt(skillsTruncated);
@@ -46,6 +41,26 @@ export async function POST(req: Request) {
   const clerkUser = userId ? await currentUser() : null;
   const meta = (clerkUser?.publicMetadata ?? undefined) as Record<string, unknown> | undefined;
   const isPro = Boolean(userId && isPremiumPublicMetadata(meta));
+
+  const routeWithGemini = isPro && useGeminiPolish;
+
+  if (routeWithGemini && !process.env.GEMINI_API_KEY?.trim()) {
+    return NextResponse.json(
+      { error: "GEMINI_API_KEY is not set. Add it to .env.local.", code: "GEMINI_CONFIG" },
+      { status: 503 }
+    );
+  }
+  if (!routeWithGemini && !getHuggingFaceToken()) {
+    return NextResponse.json(
+      {
+        error:
+          "Career guide without Gemini polish uses Hugging Face. Set HUGGINGFACE_API_TOKEN in .env.local. Optional: HUGGINGFACE_MODEL overrides the default model.",
+        code: "HF_CONFIG",
+      },
+      { status: 503 }
+    );
+  }
+
   const ip = getClientIp(req);
   const rl = checkGeminiRateLimit({
     userId: userId ?? null,
@@ -55,17 +70,16 @@ export async function POST(req: Request) {
   });
   if (!rl.ok) return geminiRateLimitJsonResponse(rl);
 
-  const modelName = resolveGeminiModel(process.env.GEMINI_MODEL);
-
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: modelName });
-    const result = await model.generateContent(userPrompt);
-    const text = result.response.text();
+    const { text } = await generateTextBySubscription({
+      isPro: routeWithGemini,
+      userPrompt,
+      maxNewTokens: 3072,
+    });
 
     if (!text?.trim()) {
       return NextResponse.json(
-        { error: "Empty response from Gemini. Try again or check GEMINI_MODEL." },
+        { error: "Empty model response. Try again or check provider configuration.", code: "LLM_EMPTY" },
         { status: 502 }
       );
     }
@@ -75,13 +89,19 @@ export async function POST(req: Request) {
   } catch (e) {
     const message = e instanceof Error ? e.message : "Career guide generation failed";
     console.error("[career-guide]", message);
-    const status = httpStatusForGeminiFailure(message);
+    if (routeWithGemini) {
+      const status = httpStatusForGeminiFailure(message);
+      return NextResponse.json(
+        {
+          error: friendlyGeminiErrorMessage(message),
+          code: isGeminiQuotaOrRateLimitError(message) ? "GEMINI_QUOTA" : "GEMINI_ERROR",
+        },
+        { status }
+      );
+    }
     return NextResponse.json(
-      {
-        error: friendlyGeminiErrorMessage(message),
-        code: isGeminiQuotaOrRateLimitError(message) ? "GEMINI_QUOTA" : "GEMINI_ERROR",
-      },
-      { status }
+      { error: message.length > 400 ? `${message.slice(0, 397)}...` : message, code: "HF_ERROR" },
+      { status: 502 }
     );
   }
 }
