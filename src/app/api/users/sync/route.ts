@@ -1,6 +1,6 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { upsertUserByClerkId } from "@/server/supabase/users";
+import { ensureUserRowFromClerk } from "@/server/supabase/users";
 
 export const runtime = "nodejs";
 
@@ -10,19 +10,7 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await currentUser();
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const email = user.primaryEmailAddress?.emailAddress ?? "";
-  const name =
-    user.fullName ??
-    [user.firstName, user.lastName].filter(Boolean).join(" ") ??
-    user.username ??
-    "";
-
-  const { data, error } = await upsertUserByClerkId(userId, email, name);
+  const { data, error } = await ensureUserRowFromClerk(userId);
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 503 });
   }
