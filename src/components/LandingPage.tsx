@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
+import { brandToast } from "@/lib/toast";
+import { isValidResumeFile } from "@/lib/validateResumeFile";
 import { MarketingShell } from "./MarketingShell";
 import { AnalysisTerminal } from "./AnalysisTerminal";
 import { GoogleSignInButton } from "./GoogleSignInButton";
@@ -56,6 +58,11 @@ export default function LandingPage() {
     if (!isSignedIn) return;
     const file = files?.[0];
     if (!file) return;
+    if (!isValidResumeFile(file)) {
+      brandToast("Please upload a valid resume (PDF, DOCX, DOC, or TXT, max 10MB).");
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
     setUploadFile(file);
     setRunKey((k) => k + 1);
     setAnalysisBusy(true);
@@ -90,8 +97,24 @@ export default function LandingPage() {
               <GoogleSignInButton className={heroGoogle} />
             </SignedOut>
             <SignedIn>
-              <button type="button" className={heroPrimarySignedIn} disabled={analysisBusy} onClick={pickFile}>
-                {analysisBusy ? "Analyzing…" : "Upload Resume"}
+              <button
+                type="button"
+                className={`${heroPrimarySignedIn} inline-flex items-center justify-center gap-2`}
+                disabled={analysisBusy}
+                onClick={pickFile}
+                aria-busy={analysisBusy}
+              >
+                {analysisBusy ? (
+                  <>
+                    <span
+                      className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-black/25 border-t-black"
+                      aria-hidden
+                    />
+                    Analyzing…
+                  </>
+                ) : (
+                  "Upload Resume"
+                )}
               </button>
               <Link href="/editor" className={outlineBtn}>
                 Career guide
@@ -221,8 +244,24 @@ export default function LandingPage() {
               <GoogleSignInButton className={ctaBottomBtn} />
             </SignedOut>
             <SignedIn>
-              <button type="button" className={ctaBottomBtn} disabled={analysisBusy} onClick={pickFile}>
-                {analysisBusy ? "Analyzing…" : "Start Now"}
+              <button
+                type="button"
+                className={`${ctaBottomBtn} inline-flex items-center justify-center gap-2`}
+                disabled={analysisBusy}
+                onClick={pickFile}
+                aria-busy={analysisBusy}
+              >
+                {analysisBusy ? (
+                  <>
+                    <span
+                      className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-black/25 border-t-black"
+                      aria-hidden
+                    />
+                    Analyzing…
+                  </>
+                ) : (
+                  "Start Now"
+                )}
               </button>
             </SignedIn>
           </div>
