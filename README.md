@@ -1,205 +1,95 @@
 # ResumeAI
 
-**AI-powered resume analysis** — ATS-oriented feedback, scoring, and insights. Built as a modern SaaS-style web app with auth, cloud storage, and a polished dark UI.
+Web app for resume analysis: ATS-style scoring, insights, and career tools. Built with Next.js, Clerk for authentication, Supabase for data and file storage, and server-side AI (Google Gemini for paid users, Hugging Face for free tier where configured).
 
----
+## Architecture
 
-## Features
+High-level request flow: the browser talks to Next.js (pages and API routes). Authentication is handled by Clerk. Application data and PDFs live in Supabase. AI calls run on the server only; the client never sees API keys.
 
-| Area | What you get |
-|------|----------------|
-| **Landing** | Hero, pipeline preview, social proof, CTA, marketing shell |
-| **Auth** | Google sign-in via [Clerk](https://clerk.com) (optional in dev without keys) |
-| **Dashboard** | Resume list, upload, sync with backend |
-| **API** | REST routes for user sync, resumes CRUD, and file upload to Supabase Storage |
+```mermaid
+flowchart TB
+  subgraph client["Client"]
+    Browser["Browser"]
+  end
 
----
+  subgraph next["Application"]
+    App["Next.js App Router"]
+    API["API Routes"]
+  end
 
-## What I did in this project
+  subgraph auth["Authentication"]
+    Clerk["Clerk"]
+  end
 
-Personal log of work shipped on **ResumeAI** (landing UX, brand, repo hygiene, and docs).
+  subgraph data["Data"]
+    Supabase["Supabase Postgres and Storage"]
+  end
 
-### Landing page & layout
-- Refactored the **bottom of the landing page** (social proof, CTA, footer): tighter vertical rhythm, `max-w-6xl` alignment, less dead space, Linear-style spacing.
-- **Social proof:** line **“1,000+ resumes analyzed successfully”** with orange highlight on the number.
-- **Trusted by teams at** (Acme, Northwind, …): moved **below** the 1,000+ stat, then **combined** into one block with a subtle divider and **tighter gaps** between stat and logos.
-- **Company chips:** hover state — **white text**, lift, soft glow (interactive “logo strip” feel).
-- **CTA section:** consistent padding, heading/button spacing, orange primary buttons for Google + “Start Now”.
+  subgraph ai["AI providers"]
+    Gemini["Google Gemini"]
+    HF["Hugging Face Inference"]
+  end
 
-### Brand & UI polish
-- **ResumeAI** wordmark: **static white glow** on the navbar and footer (tuned `text-shadow` + `drop-shadow` in `globals.css`), with a slightly stronger glow on hover.
-- **Navbar** `ResumeAI` link + **NavbarClerkFallback** + **LandingFooter** brand link share the same treatment.
-
-### Favicon & browser chrome
-- **Tab icon:** circular **orange** background, **black “RA”** text (larger glyphs), in `src/app/icon.svg` and `public/favicon.svg`.
-- **Theme color** for supported browsers set to the orange accent in `layout.tsx`.
-
-### Configuration & repository
-- **`.env.example`** rewritten with **placeholders only** (no real Supabase project IDs or secrets) — safe to commit.
-- **`.gitignore`** updated so **`.env` / `.ENV`** are never committed.
-- **Documentation:** expanded **README** (setup, env table, Supabase migration, API overview, troubleshooting).
-- **Git:** project tracked in Git and **pushed to GitHub** (`main`).
-
-### Not in scope (ideas for later)
-- LangChain / OpenAPI agent layer (not wired in this repo yet).
-- Production deploy (e.g. Vercel) — follow Quick start + env on the host when you’re ready.
-
----
+  Browser --> App
+  App --> API
+  App --> Clerk
+  API --> Clerk
+  API --> Supabase
+  API --> Gemini
+  API --> HF
+```
 
 ## Tech stack
 
-- **Framework:** [Next.js 15](https://nextjs.org) (App Router) + React 19  
-- **Styling:** Tailwind CSS v4 + [DaisyUI](https://daisyui.com)  
-- **Auth:** `@clerk/nextjs` + `@clerk/themes` (dark / orange accent)  
-- **Data:** [Supabase](https://supabase.com) (PostgreSQL + Storage) + optional direct `postgres` via `DATABASE_URL`  
-- **UX:** Framer Motion (dashboard), react-hot-toast  
-
----
-
-## Prerequisites
-
-- **Node.js** 20+ (recommended)  
-- **npm** (or compatible client)  
-- **Clerk** account (for production auth)  
-- **Supabase** project (for users, resumes, and file storage)
-
----
+- Next.js (App Router), React, TypeScript
+- Clerk (sign-in and session)
+- Supabase (PostgreSQL, Storage, service role from server routes)
+- Google Gemini and Hugging Face for text generation (routing depends on plan and route)
+- Tailwind CSS, DaisyUI
 
 ## Quick start
 
 ```bash
-git clone <your-repo-url>
-cd resume-ai
 npm install
+cp .env.example .env.local
 ```
 
-1. **Environment** — copy the example file and fill in real values:
+Fill in values from Clerk, Supabase, and AI dashboards as described in `.env.example`, then:
 
-   ```bash
-   cp .env.example .env.local
-   ```
+```bash
+npm run dev
+```
 
-2. **Run the app:**
+Open `http://localhost:3000`.
 
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run build
+npm run start
+```
 
-   Open [http://localhost:3000](http://localhost:3000).
+## Environment
 
-3. **Production build** (optional):
+Copy `.env.example` to `.env.local` and set at least:
 
-   ```bash
-   npm run build && npm run start
-   ```
+- Clerk keys (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`)
+- Supabase URL, anon key, and `SUPABASE_SERVICE_ROLE_KEY` (required for user sync and resume uploads)
+- `GEMINI_API_KEY` for Pro-tier Gemini features
+- `HUGGINGFACE_API_TOKEN` (and optional `HUGGINGFACE_MODEL`) for free-tier LLM routes
 
----
+## Database
 
-## Environment variables
-
-| Variable | Required | Purpose |
-|----------|----------|---------|
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | For sign-in UI | Clerk browser key |
-| `CLERK_SECRET_KEY` | For protected routes / server | Clerk server key |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase features | Project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client-safe access | Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Yes** for sync, resumes, uploads | Server-only; never expose to the client |
-| `GEMINI_API_KEY` | **Yes** for AI demo (Analyze / Tailor / Cover Letter) | Server-only — [Google AI Studio](https://aistudio.google.com/apikey) |
-| `GEMINI_MODEL` | Optional | Defaults to `gemini-2.5-flash` (see `src/lib/geminiDefaultModel.ts`) |
-| `DATABASE_URL` | Optional | Direct Postgres (`src/lib/db.ts`) if you use SQL helpers |
-
-> **Note:** If `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is missing, the app still **builds**; the navbar shows a disabled sign-in placeholder.
-
-See `.env.example` for copy-paste templates.
-
----
-
-## Supabase setup
-
-1. Create a project at [supabase.com](https://supabase.com).
-2. In the **SQL Editor**, run:
-
-   `supabase/migrations/00001_users_resumes_rls.sql`
-
-   This creates tables, RLS policies, and the **`resumes`** storage bucket as expected by the API routes.
-3. Copy **Project URL**, **anon key**, and **service role key** from **Settings → API** into `.env.local`.
-4. Ensure **`SUPABASE_SERVICE_ROLE_KEY`** is set — without it, user sync and uploads typically return **503** / errors.
-
----
+Run the SQL migrations in `supabase/migrations/` on your Supabase project (see comments inside each file). Without the schema and service role key, sync and storage routes will fail.
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Development server (`next dev`) |
+| `npm run dev` | Development server |
 | `npm run build` | Production build |
-| `npm run start` | Serve production build |
-| `npm run lint` | ESLint (Next.js config) |
-| `npm run clean` | Remove `.next` (fixes many stale-cache issues) |
-
----
-
-## Project structure
-
-```
-src/
-├── app/                    # App Router: pages, layout, globals.css, icon.svg
-│   ├── api/
-│   │   ├── users/sync/     # POST — Clerk user → Supabase `users`
-│   │   └── resumes/        # GET/POST + upload + DELETE by id
-│   ├── dashboard/          # Authenticated resume list / upload
-│   ├── features/           # Marketing
-│   └── pricing/
-├── components/             # UI: landing, navbar, analyzer, toasts, etc.
-├── lib/                    # Supabase clients, db helpers, toast
-├── middleware.ts           # Clerk middleware
-└── server/                 # Server-side resume/user helpers
-
-supabase/migrations/        # SQL for schema + storage
-```
-
----
-
-## API overview
-
-| Route | Method | Notes |
-|-------|--------|--------|
-| `/api/users/sync` | POST | Syncs Clerk user to Supabase |
-| `/api/resumes` | GET, POST | List / create resumes |
-| `/api/resumes/upload` | POST | Multipart upload to Storage |
-| `/api/resumes/[id]` | DELETE | Remove resume + object |
-| `/api/gemini` | POST | **Gemini proxy** — `{ userPrompt, systemPrompt }`; uses `GEMINI_API_KEY` (`fetchResumeInsights`, etc.) |
-
-Resume/resume APIs require a valid Clerk session where applicable; service role is used server-side for Supabase admin operations. `/api/gemini` is called from server-backed flows (e.g. resume insights) and does not expose the API key to the browser.
-
----
-
-## Troubleshooting
-
-### Stale Next.js cache / weird runtime errors
-
-Symptoms: missing chunks, `routes-manifest.json` errors, `TypeError: a[d] is not a function`, or odd HMR behavior.
-
-```bash
-npm run clean && npm run dev
-```
-
-Then hard-refresh the browser (**⌘⇧R** / **Ctrl+Shift+R**).
-
-### Supabase errors
-
-- **`public.users` missing** — run the migration SQL above.  
-- **503 on sync or upload** — confirm `SUPABASE_SERVICE_ROLE_KEY` and `NEXT_PUBLIC_SUPABASE_URL` in `.env.local` (restart dev server after changes).
-
----
-
-## Migration note
-
-This codebase was migrated from **Vite + React**. Clerk env names changed, e.g.  
-`VITE_CLERK_PUBLISHABLE_KEY` → **`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`**.
-
----
+| `npm run start` | Run production build |
+| `npm run lint` | ESLint |
+| `npm run clean` | Remove `.next` cache |
 
 ## License
 
-Private / all rights reserved — adjust if you open-source the project.
+Private. Change this file if you publish the repository.
