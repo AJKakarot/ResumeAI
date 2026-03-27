@@ -1,3 +1,4 @@
+import type { UserPlan } from "@/types/supabase";
 import { resolveSubscriptionPlan } from "@/lib/subscriptionPlan";
 
 /**
@@ -18,6 +19,13 @@ export function isPremiumPublicMetadata(
     plan_expiry,
   });
   return resolved.plan === "pro";
+}
+
+/** Maps Clerk billing state to the Supabase `users.plan` column (`free` | `premium`). */
+export function userPlanFromClerkMetadata(
+  meta: Record<string, unknown> | undefined | null
+): UserPlan {
+  return isPremiumPublicMetadata(meta) ? "premium" : "free";
 }
 
 /** UI label: everyone is Free unless they qualify as Pro. */
