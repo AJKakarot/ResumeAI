@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { AppToaster } from "@/components/AppToaster";
 import { AuthToastListener } from "@/components/AuthToastListener";
+import { SupabaseUserSync } from "@/components/SupabaseUserSync";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,7 +36,12 @@ export default function RootLayout({
     <>
       {children}
       <AppToaster />
-      {publishableKey ? <AuthToastListener /> : null}
+      {publishableKey ? (
+        <>
+          <AuthToastListener />
+          <SupabaseUserSync />
+        </>
+      ) : null}
     </>
   );
 
