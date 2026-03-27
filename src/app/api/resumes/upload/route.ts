@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
+import { isPremiumPublicMetadata, userPlanFromClerkMetadata } from "@/lib/clerkPremium";
 import { FREE_PLAN_MAX_RESUMES } from "@/lib/planLimits";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { upsertUserByClerkId } from "@/server/supabase/users";
@@ -41,12 +41,14 @@ export async function POST(req: Request) {
     user.username ??
     "";
 
-  const { data: appUser, error: upsertErr } = await upsertUserByClerkId(userId, email, name);
+  const meta = user.publicMetadata as Record<string, unknown> | undefined;
+  const plan = userPlanFromClerkMetadata(meta);
+
+  const { data: appUser, error: upsertErr } = await upsertUserByClerkId(userId, email, name, plan);
   if (upsertErr || !appUser) {
     return NextResponse.json({ error: upsertErr?.message ?? "User sync failed" }, { status: 503 });
   }
 
-  const meta = user.publicMetadata as Record<string, unknown> | undefined;
   const isPro = isPremiumPublicMetadata(meta);
   if (!isPro) {
     const { count, error: cntErr } = await countResumesByUserId(appUser.id);

@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
-import { getUserByClerkId } from "@/server/supabase/users";
+import { getUserByClerkIdOrEnsure } from "@/server/supabase/users";
 
 export const runtime = "nodejs";
 
@@ -29,8 +29,11 @@ export async function DELETE(
     return NextResponse.json({ error: "Server misconfigured" }, { status: 503 });
   }
 
-  const { data: appUser, error: uErr } = await getUserByClerkId(userId);
-  if (uErr || !appUser) {
+  const { data: appUser, error: uErr } = await getUserByClerkIdOrEnsure(userId);
+  if (uErr) {
+    return NextResponse.json({ error: uErr.message }, { status: 503 });
+  }
+  if (!appUser) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 

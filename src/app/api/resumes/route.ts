@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { getUserByClerkId } from "@/server/supabase/users";
+import { getUserByClerkIdOrEnsure } from "@/server/supabase/users";
 import { listResumesByUserId } from "@/server/supabase/resumes";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: appUser, error: userErr } = await getUserByClerkId(userId);
+  const { data: appUser, error: userErr } = await getUserByClerkIdOrEnsure(userId);
   if (userErr) {
     return NextResponse.json({ error: userErr.message }, { status: 503 });
   }
