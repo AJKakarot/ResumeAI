@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { analyzeResume } from "@/lib/analyzer/analyzeResume";
 import { applyFreeTierSummary, withProTier } from "@/lib/analyzer/tieredAnalysis";
 import { enhanceAnalyzeWithGemini } from "@/lib/analyzer/geminiSuggest";
+import { enhanceAnalyzeWithHuggingFace } from "@/lib/analyzer/huggingfaceSuggest";
 import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
 import {
   checkGeminiRateLimit,
@@ -10,6 +11,7 @@ import {
   geminiRateLimitJsonResponse,
   getClientIp,
 } from "@/lib/geminiRateLimit";
+import { looksLikeResumeText, RESUME_LIKENESS_ERROR } from "@/lib/looksLikeResume";
 
 export const runtime = "nodejs";
 
@@ -31,6 +33,9 @@ export async function POST(req: Request) {
   const text = typeof b.text === "string" ? b.text : "";
   if (!text.trim()) {
     return NextResponse.json({ error: "text is required" }, { status: 400 });
+  }
+  if (!looksLikeResumeText(text)) {
+    return NextResponse.json({ error: RESUME_LIKENESS_ERROR }, { status: 400 });
   }
 
   const jobTitle = typeof b.jobTitle === "string" ? b.jobTitle : "";
@@ -78,6 +83,17 @@ export async function POST(req: Request) {
         ...result,
         aiSuggestions: ai,
         scanMode: "rule+gemini",
+      };
+    }
+  }
+
+  if (!isPro) {
+    const hf = await enhanceAnalyzeWithHuggingFace(result, text, jobTitle, jobDescription);
+    if (hf?.length) {
+      result = {
+        ...result,
+        aiSuggestions: hf,
+        scanMode: "rule+huggingface",
       };
     }
   }
