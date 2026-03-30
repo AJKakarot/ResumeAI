@@ -27,8 +27,9 @@ export function successToast(message: string) {
 }
 
 /** Same chrome as login success; no success icon — for neutral notices (e.g. invalid upload). */
-export function brandToast(message: string) {
+export function brandToast(message: string, options?: { id?: string }) {
   return toast(message, {
+    ...(options?.id != null ? { id: options.id } : {}),
     duration: 4000,
     position: "top-right",
     style: brandAccentStyle,
