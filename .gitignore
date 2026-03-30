@@ -13,11 +13,41 @@ dist-ssr
 .next
 *.local
 
-# Secrets — never commit
+# Secrets & credentials — never commit
 .env
 .env.*
 !.env.example
+!.env.sample
+!.env.template
+!.env.*.example
 .ENV
+.envrc
+.direnv/
+
+# Deploy / CI metadata (can reference project IDs or pull env previews)
+.vercel/
+
+# Package & registry auth tokens
+.npmrc
+!.npmrc.example
+
+# Private keys & keystores
+*.pem
+*.p12
+*.pfx
+*.key
+*.jks
+*.keystore
+
+# Common cloud / mobile secret filenames
+*credentials*.json
+*serviceAccount*.json
+*firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
+
+# Misc. secret-bearing tool files
+.sentryclirc
 
 # Editor directories and files
 .vscode/*
