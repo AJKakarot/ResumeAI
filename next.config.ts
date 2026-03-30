@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
     "canvas",
     "tesseract.js",
   ],
+  /** Ensure pdf.worker is present in the serverless bundle when not using CDN fallback */
+  outputFileTracingIncludes: {
+    "/api/extract-pdf": ["./node_modules/pdfjs-dist/legacy/build/**/*"],
+  },
 };
 
 export default nextConfig;
