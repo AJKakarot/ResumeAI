@@ -183,10 +183,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section
-        className="pipeline-section-safe-bottom mx-auto mt-6 max-w-6xl px-6"
-        aria-label="Analysis preview"
-      >
+      <section className="mx-auto mt-6 max-w-6xl px-6 pb-0" aria-label="Analysis preview">
         <p className="mb-3 text-center text-sm font-medium tracking-tight text-zinc-400 md:text-base">
           Pipeline — upload to run
         </p>

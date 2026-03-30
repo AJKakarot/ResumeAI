@@ -48,7 +48,7 @@ export function EditorNavbar(props: EditorNavbarProps) {
   }, []);
 
   const headerClass = cn(
-    "sticky top-0 z-50 w-full shrink-0 border-b border-white/10 backdrop-blur-md backdrop-saturate-150 transition-all duration-300 ease-out",
+    "sticky top-0 z-50 w-full border-b border-white/10 backdrop-blur-md transition-all duration-300 ease-out",
     scrolled ? "bg-black/70 shadow-[0_1px_0_0_rgba(255,255,255,0.06)]" : "bg-black/60"
   );
 

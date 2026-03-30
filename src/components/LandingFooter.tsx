@@ -4,7 +4,7 @@ import { SectionLink } from "./SectionLink";
 export function LandingFooter() {
   return (
     <footer className="relative z-10 mt-10 border-t border-white/10 bg-black/40 text-base-content backdrop-blur-sm">
-      <div className="landing-footer-inner mx-auto max-w-6xl px-6 pt-10">
+      <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="flex flex-col items-center gap-4 text-center">
           <Link
             href="/"

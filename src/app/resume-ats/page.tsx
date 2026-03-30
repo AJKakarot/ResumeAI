@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function ResumeAtsPage() {
   return (
-    <div className="pb-safe-page min-h-[100dvh] bg-[#0D0D0D]">
-      <header className="app-safe-top sticky top-0 z-50 w-full shrink-0 border-b border-white/10 bg-black/60 backdrop-blur-md backdrop-saturate-150">
+    <div className="min-h-[100dvh] bg-[#0D0D0D]">
+      <header className="sticky top-0 z-10 border-b border-white/10 bg-black/60 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link
             href="/"
