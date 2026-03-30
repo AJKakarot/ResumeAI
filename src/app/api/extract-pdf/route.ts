@@ -9,8 +9,33 @@ export const maxDuration = 60;
 
 const MIN_TEXT_BEFORE_OCR = 60;
 
+async function ensurePdfRuntimeGlobals() {
+  const runtime = globalThis as Record<string, unknown>;
+  if (typeof runtime.DOMMatrix !== "undefined") return;
+
+  try {
+    const napiCanvas = await import("@napi-rs/canvas");
+    if (typeof napiCanvas.DOMMatrix !== "undefined") {
+      runtime.DOMMatrix = napiCanvas.DOMMatrix as unknown;
+      return;
+    }
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    const nodeCanvas = await import("canvas");
+    if ("DOMMatrix" in nodeCanvas && typeof (nodeCanvas as { DOMMatrix?: unknown }).DOMMatrix !== "undefined") {
+      runtime.DOMMatrix = (nodeCanvas as { DOMMatrix: unknown }).DOMMatrix;
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function POST(req: Request) {
   try {
+    await ensurePdfRuntimeGlobals();
     const { PDFParse } = await import("pdf-parse");
     PDFParse.setWorker(getPdfJsWorkerPath());
     const formData = await req.formData();
