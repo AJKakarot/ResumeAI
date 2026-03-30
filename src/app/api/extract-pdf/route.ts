@@ -1,60 +1,22 @@
 import { NextResponse } from "next/server";
-import { installDOMMatrixPolyfill } from "@/lib/dommatrix-polyfill";
-import { extractPdfTextWithOcr } from "@/lib/ocr/extractPdfWithOcr";
-
-installDOMMatrixPolyfill();
+import { extractText } from "unpdf";
 
 export const runtime = "nodejs";
 
-/** Vercel/serverless: allow PDF + optional OCR to finish (default is often 10s). */
 export const maxDuration = 60;
 
 const MIN_TEXT_BEFORE_OCR = 60;
 
 async function extractPdfText(buffer: Buffer): Promise<string> {
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-
-  // Disable worker: Vercel serverless can't spawn Worker threads reliably.
-  if (typeof pdfjs.GlobalWorkerOptions !== "undefined") {
-    pdfjs.GlobalWorkerOptions.workerSrc = "";
-  }
-
-  const loadingTask = pdfjs.getDocument({
-    data: new Uint8Array(buffer),
-    disableFontFace: true,
-    useWorkerFetch: false,
-    useSystemFonts: false,
-    isOffscreenCanvasSupported: false,
-    isImageDecoderSupported: false,
-    disableAutoFetch: true,
-    disableStream: true,
-  });
-  const pdf = await loadingTask.promise;
-  const pages: string[] = [];
-
-  try {
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      const line = content.items
-        .map((item) => ("str" in item ? String(item.str ?? "") : ""))
-        .join(" ")
-        .replace(/\s+/g, " ")
-        .trim();
-      if (line) pages.push(line);
-      page.cleanup();
-    }
-  } finally {
-    await pdf.destroy();
-  }
-
-  return pages.join("\n\n").trim();
+  const { text, totalPages } = await extractText(new Uint8Array(buffer));
+  const joined = Array.isArray(text) ? text.join("\n\n") : String(text);
+  console.log(`[extract-pdf] extracted ${totalPages} page(s), ${joined.length} chars`);
+  return joined.trim();
 }
 
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
-    // Support requested key "pdf" and backward-compatible "file".
     const file = formData.get("pdf") ?? formData.get("file");
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "pdf/file required" }, { status: 400 });
@@ -64,10 +26,15 @@ export async function POST(req: Request) {
 
     let ocrUsed = false;
     if (text.trim().length < MIN_TEXT_BEFORE_OCR) {
-      const ocrText = await extractPdfTextWithOcr(buf);
-      if (ocrText.trim().length > text.trim().length) {
-        text = ocrText;
-        ocrUsed = true;
+      try {
+        const { extractPdfTextWithOcr } = await import("@/lib/ocr/extractPdfWithOcr");
+        const ocrText = await extractPdfTextWithOcr(buf);
+        if (ocrText.trim().length > text.trim().length) {
+          text = ocrText;
+          ocrUsed = true;
+        }
+      } catch {
+        console.warn("[extract-pdf] OCR fallback unavailable in this runtime");
       }
     }
 
