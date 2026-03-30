@@ -1,4 +1,4 @@
-const SW_VERSION = "v1.0.6";
+const SW_VERSION = "v1.0.7";
 const STATIC_CACHE = `resumeai-static-${SW_VERSION}`;
 const RUNTIME_CACHE = `resumeai-runtime-${SW_VERSION}`;
 
@@ -35,6 +35,9 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
 
   if (req.method !== "GET") return;
+  // Let browser handle top-level/doc navigations to avoid redirect-mode
+  // mismatches (e.g. redirected responses with non-follow redirect mode).
+  if (req.mode === "navigate") return;
 
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
@@ -49,6 +52,7 @@ self.addEventListener("fetch", (event) => {
           if (
             networkRes &&
             networkRes.status === 200 &&
+            !networkRes.redirected &&
             (networkRes.type === "basic" || networkRes.type === "default")
           ) {
             const clone = networkRes.clone();
