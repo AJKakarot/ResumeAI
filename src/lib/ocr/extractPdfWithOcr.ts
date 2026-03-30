@@ -1,4 +1,4 @@
-import path from "path";
+import { getPdfJsWorkerPath } from "@/lib/pdfjsWorkerPath";
 
 const OCR_PAGE_CAP = 3;
 const OCR_SCALE = 1.75;
@@ -13,10 +13,7 @@ export async function extractPdfTextWithOcr(buffer: Buffer): Promise<string> {
     const Tesseract = await import("tesseract.js");
     const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
-    pdfjs.GlobalWorkerOptions.workerSrc = path.join(
-      process.cwd(),
-      "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"
-    );
+    pdfjs.GlobalWorkerOptions.workerSrc = getPdfJsWorkerPath();
 
     const data = new Uint8Array(buffer);
     const loadingTask = pdfjs.getDocument({ data, useSystemFonts: true });
