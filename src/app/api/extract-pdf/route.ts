@@ -9,49 +9,42 @@ export const maxDuration = 60;
 
 const MIN_TEXT_BEFORE_OCR = 60;
 
-async function ensurePdfRuntimeGlobals() {
-  const runtime = globalThis as Record<string, unknown>;
-  if (typeof runtime.DOMMatrix !== "undefined") return;
+async function extractPdfText(buffer: Buffer): Promise<string> {
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  pdfjs.GlobalWorkerOptions.workerSrc = getPdfJsWorkerPath();
+
+  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(buffer), useSystemFonts: true });
+  const pdf = await loadingTask.promise;
+  const pages: string[] = [];
 
   try {
-    const napiCanvas = await import("@napi-rs/canvas");
-    if (typeof napiCanvas.DOMMatrix !== "undefined") {
-      runtime.DOMMatrix = napiCanvas.DOMMatrix as unknown;
-      return;
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const line = content.items
+        .map((item) => ("str" in item ? String(item.str ?? "") : ""))
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (line) pages.push(line);
+      page.cleanup();
     }
-  } catch {
-    /* ignore */
+  } finally {
+    await pdf.destroy();
   }
 
-  try {
-    const nodeCanvas = await import("canvas");
-    if ("DOMMatrix" in nodeCanvas && typeof (nodeCanvas as { DOMMatrix?: unknown }).DOMMatrix !== "undefined") {
-      runtime.DOMMatrix = (nodeCanvas as { DOMMatrix: unknown }).DOMMatrix;
-    }
-  } catch {
-    /* ignore */
-  }
+  return pages.join("\n\n").trim();
 }
 
 export async function POST(req: Request) {
   try {
-    await ensurePdfRuntimeGlobals();
-    const { PDFParse } = await import("pdf-parse");
-    PDFParse.setWorker(getPdfJsWorkerPath());
     const formData = await req.formData();
     const file = formData.get("file");
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "file required" }, { status: 400 });
     }
     const buf = Buffer.from(await file.arrayBuffer());
-    const parser = new PDFParse({ data: new Uint8Array(buf) });
-    let text = "";
-    try {
-      const textResult = await parser.getText();
-      text = typeof textResult.text === "string" ? textResult.text : "";
-    } finally {
-      await parser.destroy();
-    }
+    let text = await extractPdfText(buf);
 
     let ocrUsed = false;
     if (text.trim().length < MIN_TEXT_BEFORE_OCR) {
