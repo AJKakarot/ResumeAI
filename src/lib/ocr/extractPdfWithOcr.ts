@@ -1,3 +1,7 @@
+import { installDOMMatrixPolyfill } from "@/lib/dommatrix-polyfill";
+
+installDOMMatrixPolyfill();
+
 const OCR_PAGE_CAP = 3;
 const OCR_SCALE = 1.75;
 

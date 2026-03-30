@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
+import { installDOMMatrixPolyfill } from "@/lib/dommatrix-polyfill";
 import { extractPdfTextWithOcr } from "@/lib/ocr/extractPdfWithOcr";
+
+installDOMMatrixPolyfill();
 
 export const runtime = "nodejs";
 
