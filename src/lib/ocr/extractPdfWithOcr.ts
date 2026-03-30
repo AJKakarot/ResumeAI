@@ -1,5 +1,3 @@
-import { configurePdfJsWorker } from "@/lib/configurePdfJsWorker";
-
 const OCR_PAGE_CAP = 3;
 const OCR_SCALE = 1.75;
 
@@ -12,13 +10,14 @@ export async function extractPdfTextWithOcr(buffer: Buffer): Promise<string> {
     const { createCanvas } = await import("canvas");
     const Tesseract = await import("tesseract.js");
     const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-    configurePdfJsWorker(pdfjs);
 
     const data = new Uint8Array(buffer);
     const loadingTask = pdfjs.getDocument({
       data,
       disableFontFace: true,
       useWorkerFetch: false,
+      isOffscreenCanvasSupported: false,
+      isImageDecoderSupported: false,
     });
     const pdf = await loadingTask.promise;
     const maxPages = Math.min(pdf.numPages, OCR_PAGE_CAP);

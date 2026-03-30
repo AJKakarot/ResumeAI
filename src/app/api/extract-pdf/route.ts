@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { configurePdfJsWorker } from "@/lib/configurePdfJsWorker";
 import { extractPdfTextWithOcr } from "@/lib/ocr/extractPdfWithOcr";
 
 export const runtime = "nodejs";
@@ -11,12 +10,14 @@ const MIN_TEXT_BEFORE_OCR = 60;
 
 async function extractPdfText(buffer: Buffer): Promise<string> {
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  configurePdfJsWorker(pdfjs);
 
   const loadingTask = pdfjs.getDocument({
     data: new Uint8Array(buffer),
+    // Serverless-safe path: avoid font loading and worker-side fetch assumptions.
     disableFontFace: true,
     useWorkerFetch: false,
+    isOffscreenCanvasSupported: false,
+    isImageDecoderSupported: false,
   });
   const pdf = await loadingTask.promise;
   const pages: string[] = [];
