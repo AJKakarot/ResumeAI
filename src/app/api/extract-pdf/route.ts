@@ -11,13 +11,20 @@ const MIN_TEXT_BEFORE_OCR = 60;
 async function extractPdfText(buffer: Buffer): Promise<string> {
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
+  // Disable worker: Vercel serverless can't spawn Worker threads reliably.
+  if (typeof pdfjs.GlobalWorkerOptions !== "undefined") {
+    pdfjs.GlobalWorkerOptions.workerSrc = "";
+  }
+
   const loadingTask = pdfjs.getDocument({
     data: new Uint8Array(buffer),
-    // Serverless-safe path: avoid font loading and worker-side fetch assumptions.
     disableFontFace: true,
     useWorkerFetch: false,
+    useSystemFonts: false,
     isOffscreenCanvasSupported: false,
     isImageDecoderSupported: false,
+    disableAutoFetch: true,
+    disableStream: true,
   });
   const pdf = await loadingTask.promise;
   const pages: string[] = [];

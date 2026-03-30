@@ -11,13 +11,20 @@ export async function extractPdfTextWithOcr(buffer: Buffer): Promise<string> {
     const Tesseract = await import("tesseract.js");
     const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
 
+    if (typeof pdfjs.GlobalWorkerOptions !== "undefined") {
+      pdfjs.GlobalWorkerOptions.workerSrc = "";
+    }
+
     const data = new Uint8Array(buffer);
     const loadingTask = pdfjs.getDocument({
       data,
       disableFontFace: true,
       useWorkerFetch: false,
+      useSystemFonts: false,
       isOffscreenCanvasSupported: false,
       isImageDecoderSupported: false,
+      disableAutoFetch: true,
+      disableStream: true,
     });
     const pdf = await loadingTask.promise;
     const maxPages = Math.min(pdf.numPages, OCR_PAGE_CAP);
