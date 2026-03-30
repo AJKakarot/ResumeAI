@@ -5,6 +5,8 @@ import { dark } from "@clerk/themes";
 import { AppToaster } from "@/components/AppToaster";
 import { AuthToastListener } from "@/components/AuthToastListener";
 import { SupabaseUserSync } from "@/components/SupabaseUserSync";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { PwaInstallButton } from "@/components/PwaInstallButton";
 import "./globals.css";
 
 const inter = Inter({
@@ -16,6 +18,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "ResumeAI",
   description: "Optimize your resume with AI — ATS score and actionable insights",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "ResumeAI",
+  },
 };
 
 export const viewport: Viewport = {
@@ -35,6 +43,8 @@ export default function RootLayout({
   const shell = (
     <>
       {children}
+      <PwaInstallButton />
+      <ServiceWorkerRegister />
       <AppToaster />
       {publishableKey ? (
         <>
@@ -64,6 +74,13 @@ export default function RootLayout({
 
   return (
     <html lang="en" data-theme="dark" className={inter.variable}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="theme-color" content="#f97316" />
+      </head>
       <body className={`${inter.className} antialiased`}>{content}</body>
     </html>
   );

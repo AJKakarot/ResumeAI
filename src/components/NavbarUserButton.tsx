@@ -2,7 +2,6 @@
 
 import { UserButton, useUser } from "@clerk/nextjs";
 import { getUserPlanLabel, isPremiumPublicMetadata } from "@/lib/clerkPremium";
-import { PlanBadge } from "@/components/PlanBadge";
 
 /** Razorpay brand blue (marketing / checkout alignment) */
 const RZP_BLUE = "#3395FF";
@@ -18,7 +17,6 @@ export function NavbarUserButton() {
 
   return (
     <div className="flex items-center gap-2">
-      <PlanBadge isPro={isPro} className="hidden sm:inline-flex" />
       {/* Pro: Rzp blue ring + blurred halo + layered glow (Free: sky-tinted ring) */}
       <div className="relative shrink-0">
         {isPro ? (

@@ -9,7 +9,7 @@ type PlanBadgeProps = {
 } & Pick<HTMLAttributes<HTMLSpanElement>, "aria-label">;
 
 /**
- * Only shows a label for **Free** users. Pro is indicated by avatar / navbar styling (no “Pro” pill).
+ * Optional “Free” pill for contexts like dashboard. Navbar uses avatar styling only (no Free label).
  */
 export function PlanBadge({ isPro, className, "aria-label": ariaLabel }: PlanBadgeProps) {
   if (isPro) return null;
