@@ -43,9 +43,10 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
-    const file = formData.get("file");
+    // Support requested key "pdf" and backward-compatible "file".
+    const file = formData.get("pdf") ?? formData.get("file");
     if (!(file instanceof File)) {
-      return NextResponse.json({ error: "file required" }, { status: 400 });
+      return NextResponse.json({ error: "pdf/file required" }, { status: 400 });
     }
     const buf = Buffer.from(await file.arrayBuffer());
     let text = await extractPdfText(buf);

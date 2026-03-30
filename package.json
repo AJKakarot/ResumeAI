@@ -22,6 +22,7 @@
     "next": "^15.5.9",
     "node-fetch": "^3.3.2",
     "pdf-parse": "^2.4.5",
+    "pdf-parser": "^1.0.5",
     "postgres": "^3.4.8",
     "razorpay": "^2.9.6",
     "react": "^19.2.4",
