@@ -11,9 +11,9 @@ const primaryBtn =
 
 export function SignUpPageClient() {
   return (
-    <div className="relative flex min-h-[100dvh] flex-col overflow-x-hidden bg-gradient-to-b from-black via-black to-gray-950 pb-[env(safe-area-inset-bottom)] font-sans text-zinc-100">
+    <div className="pb-safe-page relative flex min-h-[100dvh] flex-col bg-gradient-to-b from-black via-black to-gray-950 font-sans text-zinc-100">
       <LandingBackground />
-      <main className="relative z-10 flex flex-1 flex-col">
+      <main className="relative z-10 flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
         <section className="mx-auto flex min-h-[min(560px,100dvh)] w-full max-w-lg flex-1 flex-col justify-center px-4 py-12 sm:px-6">
           <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-8 shadow-[0_24px_80px_-40px_rgba(0,0,0,0.8)] backdrop-blur-sm sm:p-10">
             <div className="flex justify-center">

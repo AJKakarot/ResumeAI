@@ -37,6 +37,57 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
+/*
+ * iOS PWA / notch / home indicator — use plain CSS so commas in env()/max()
+ * are not mangled by Tailwind arbitrary-value parsing.
+ */
+#site-navbar,
+#editor-navbar {
+  padding-top: env(safe-area-inset-top, 0px);
+  /* Sticky + backdrop-blur: stable compositing on iOS / Chrome Android */
+  isolation: isolate;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Sticky bars: header or div (e.g. editor skeleton) */
+.app-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+  isolation: isolate;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.marketing-shell-main {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+.pipeline-section-safe-bottom {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+.landing-footer-inner {
+  padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+.pb-safe-page {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.dashboard-main-pad {
+  padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+  padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+@media (width >= 640px) {
+  .dashboard-main-pad {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+    padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+  }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;

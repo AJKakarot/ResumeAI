@@ -10,11 +10,13 @@ type MarketingShellProps = {
 
 export function MarketingShell({ children }: MarketingShellProps) {
   return (
-    <div className="relative flex min-h-screen min-h-[100dvh] flex-col overflow-x-hidden bg-gradient-to-b from-black via-black to-gray-950 pb-[env(safe-area-inset-bottom)] font-sans text-zinc-100">
+    <div className="relative flex min-h-screen min-h-[100dvh] flex-col bg-gradient-to-b from-black via-black to-gray-950 font-sans text-zinc-100">
       <LandingBackground />
       <Navbar />
-      <main className="relative z-10 flex-1">{children}</main>
-      <LandingFooter />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden">
+        <main className="marketing-shell-main relative z-10 flex-1">{children}</main>
+        <LandingFooter />
+      </div>
     </div>
   );
 }

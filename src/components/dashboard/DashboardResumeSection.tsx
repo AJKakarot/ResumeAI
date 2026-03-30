@@ -115,12 +115,12 @@ export function DashboardResumeSection() {
   const freeAtResumeLimit = !isPro && resumes.length >= FREE_PLAN_MAX_RESUMES;
 
   return (
-    <div className="mt-8 space-y-6 border-t border-white/10 pt-8">
-      <div>
+    <div className="mt-6 min-w-0 space-y-6 border-t border-white/10 pt-6 sm:mt-8 sm:pt-8">
+      <div className="min-w-0">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Resumes</h2>
-        <p className="mt-1 text-xs leading-relaxed text-zinc-600">PDF uploads are stored in Supabase Storage.</p>
+        <p className="mt-1 text-pretty text-xs leading-relaxed text-zinc-600">PDF uploads are stored in Supabase Storage.</p>
         {!isPro && (
-          <p className="mt-2 text-xs text-zinc-500">
+          <p className="mt-2 text-pretty text-xs leading-relaxed text-zinc-500">
             Free plan: {resumes.length}/{FREE_PLAN_MAX_RESUMES} resumes.
             {freeAtResumeLimit ? (
               <>
@@ -137,8 +137,8 @@ export function DashboardResumeSection() {
         <motion.label
           className={
             freeAtResumeLimit
-              ? "btn btn-outline mt-4 inline-flex cursor-not-allowed rounded-xl border border-white/10 bg-white/[0.02] text-zinc-500 opacity-60 pointer-events-none"
-              : "btn btn-outline mt-4 inline-flex cursor-pointer rounded-xl border border-white/15 bg-white/[0.04] text-zinc-200 transition-all duration-300 hover:border-orange-500/40 hover:bg-orange-500/[0.08]"
+              ? "btn btn-outline mt-4 flex w-full min-h-[44px] cursor-not-allowed justify-center rounded-xl border border-white/10 bg-white/[0.02] text-zinc-500 opacity-60 pointer-events-none sm:inline-flex sm:w-auto sm:min-h-0"
+              : "btn btn-outline mt-4 flex w-full min-h-[44px] cursor-pointer justify-center rounded-xl border border-white/15 bg-white/[0.04] text-zinc-200 transition-all duration-300 hover:border-orange-500/40 hover:bg-orange-500/[0.08] sm:inline-flex sm:w-auto sm:min-h-0"
           }
           whileHover={reduce || freeAtResumeLimit ? undefined : { scale: 1.05 }}
           whileTap={reduce || freeAtResumeLimit ? undefined : { scale: 0.97 }}
@@ -189,15 +189,15 @@ export function DashboardResumeSection() {
             <motion.li
               key={r.id}
               variants={reduce ? undefined : listItem}
-              className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 transition-all duration-300 hover:border-orange-500/25"
-              whileHover={reduce ? undefined : { scale: 1.02, y: -2 }}
+              className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-3 transition-all duration-300 hover:border-orange-500/25 sm:px-4"
+              whileHover={reduce ? undefined : { scale: 1.01, y: -1 }}
             >
-              <div className="flex min-w-0 items-center justify-between gap-3 text-sm">
+              <div className="flex min-w-0 flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <a
                   href={r.file_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="min-w-0 truncate text-orange-400/95 transition-all duration-300 hover:text-orange-300 hover:underline"
+                  className="min-w-0 break-words text-orange-400/95 transition-all duration-300 hover:text-orange-300 hover:underline sm:truncate sm:break-normal"
                 >
                   {new Date(r.created_at).toLocaleString()} — Open PDF
                 </a>
@@ -205,7 +205,7 @@ export function DashboardResumeSection() {
                   type="button"
                   disabled={deletingId === r.id}
                   onClick={() => void deleteResume(r.id)}
-                  className="inline-flex shrink-0 items-center justify-center rounded-lg p-1.5 text-red-500 transition-all duration-300 hover:bg-red-500/15 hover:text-red-400 disabled:opacity-40"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-lg text-red-500 transition-all duration-300 hover:bg-red-500/15 hover:text-red-400 disabled:opacity-40 sm:h-auto sm:w-auto sm:self-auto sm:p-1.5"
                   aria-label="Delete PDF"
                   title="Delete"
                 >

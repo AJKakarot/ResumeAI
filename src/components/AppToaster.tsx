@@ -6,7 +6,7 @@ export function AppToaster() {
   return (
     <Toaster
       position="top-right"
-      containerStyle={{ top: 16, right: 16 }}
+      containerStyle={{ top: 16, right: 16, zIndex: 10050 }}
       toastOptions={{
         duration: 4000,
         className: "!font-sans !text-sm",
