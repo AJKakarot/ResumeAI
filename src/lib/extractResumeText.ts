@@ -21,8 +21,15 @@ export async function extractResumeText(file: File): Promise<string> {
     const fd = new FormData();
     fd.append("file", file);
     const res = await fetch("/api/extract-pdf", { method: "POST", body: fd });
-    const j = (await res.json()) as { text?: string; error?: string };
-    if (!res.ok) throw new Error(j.error ?? "PDF extraction failed");
+    if (!res.ok) {
+      let msg = `PDF extraction failed (${res.status})`;
+      try {
+        const j = (await res.json()) as { error?: string };
+        if (j.error) msg = j.error;
+      } catch { /* non-JSON response */ }
+      throw new Error(msg);
+    }
+    const j = (await res.json()) as { text?: string };
     return normalizeResumeText(j.text ?? "");
   }
 

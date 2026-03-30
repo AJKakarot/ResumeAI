@@ -188,8 +188,9 @@ export function AnalysisTerminal({
       let text = "";
       try {
         text = await extractResumeText(resumeFile);
-      } catch {
-        push("✖ could not read file", "warning");
+      } catch (err) {
+        const detail = err instanceof Error ? err.message : "unknown error";
+        push(`✖ could not read file: ${detail}`, "warning");
         setIsRunning(false);
         setErrorDone(true);
         onAnalysisComplete?.();

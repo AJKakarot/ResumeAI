@@ -1,6 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { isPremiumPublicMetadata, userPlanFromClerkMetadata } from "@/lib/clerkPremium";
+import { compressPdf } from "@/lib/compressPdf";
 import { FREE_PLAN_MAX_RESUMES } from "@/lib/planLimits";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import { upsertUserByClerkId } from "@/server/supabase/users";
@@ -82,7 +83,8 @@ export async function POST(req: Request) {
   }
 
   const path = `${appUser.id}/${crypto.randomUUID()}-${safeFileName(file.name)}`;
-  const buf = Buffer.from(await file.arrayBuffer());
+  const raw = Buffer.from(await file.arrayBuffer());
+  const buf = await compressPdf(raw);
 
   const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, buf, {
     contentType: "application/pdf",
