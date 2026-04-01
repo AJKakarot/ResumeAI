@@ -7,7 +7,7 @@ export async function geminiGenerateText(opts: {
   userPrompt: string;
 }): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not set");
+  if (!apiKey) throw new Error("Advanced AI features are not live yet. Coming soon 🚀");
 
   const modelName = resolveGeminiModel(process.env.GEMINI_MODEL);
   const genAI = new GoogleGenerativeAI(apiKey);
@@ -16,7 +16,15 @@ export async function geminiGenerateText(opts: {
     ...(opts.systemInstruction?.trim() ? { systemInstruction: opts.systemInstruction.trim() } : {}),
   });
 
-  const result = await model.generateContent(opts.userPrompt);
-  const text = result.response.text();
-  return text?.trim() ?? "";
+  try {
+    const result = await model.generateContent(opts.userPrompt);
+    const text = result.response.text();
+    return text?.trim() ?? "";
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "";
+    if (msg.includes("API_KEY_INVALID") || msg.includes("API key not valid")) {
+      throw new Error("Advanced AI features are not live yet. Coming soon 🚀");
+    }
+    throw e;
+  }
 }

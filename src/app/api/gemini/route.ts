@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
   if (isPro && !process.env.GEMINI_API_KEY?.trim()) {
     return NextResponse.json(
-      { error: "GEMINI_API_KEY is not set. Add it to .env.local (see .env.example).", code: "GEMINI_CONFIG" },
+      { error: "Advanced AI features are not live yet. Coming soon 🚀", code: "GEMINI_CONFIG" },
       { status: 503 }
     );
   }

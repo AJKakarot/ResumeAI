@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) {
     return NextResponse.json(
-      { error: "GEMINI_API_KEY is not set. Add it to .env.local." },
+      { error: "Advanced AI features are not live yet. Coming soon 🚀" },
       { status: 503 }
     );
   }
