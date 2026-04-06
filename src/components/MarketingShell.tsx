@@ -10,7 +10,7 @@ type MarketingShellProps = {
 
 export function MarketingShell({ children }: MarketingShellProps) {
   return (
-    <div className="relative flex min-h-screen min-h-[100dvh] flex-col overflow-x-hidden bg-[#0a0a0a] pb-[env(safe-area-inset-bottom)] font-sans text-[#f0f0f0]">
+    <div className="relative flex min-h-screen min-h-[100dvh] flex-col overflow-x-clip bg-[#0a0a0a] pb-[env(safe-area-inset-bottom)] font-sans text-[#f0f0f0]">
       <LandingBackground />
       <Navbar />
       <main className="relative z-10 flex-1">{children}</main>
