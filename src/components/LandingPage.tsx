@@ -26,7 +26,7 @@ const ctaBottomBtn =
   "inline-flex w-full max-w-xs items-center justify-center rounded-lg border-0 bg-orange-500 px-6 py-3 text-sm font-medium text-black transition-all duration-300 hover:scale-[1.03] hover:bg-orange-400 disabled:pointer-events-none disabled:opacity-45 sm:w-auto sm:max-w-none";
 
 const fieldClass =
-  "w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-[#f0f0f0] placeholder:text-[#666666] outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20";
+  "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-orange-500/40 focus:ring-2 focus:ring-orange-500/20";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -76,20 +76,20 @@ export default function LandingPage() {
     <MarketingShell>
       <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
         <div className="relative mx-auto max-w-3xl text-center">
-          <h1 className="font-syne mb-4 text-balance text-[clamp(1.625rem,6vw+0.35rem,3.25rem)] font-extrabold leading-tight tracking-tight text-[#f0f0f0]">
+          <h1 className="mb-4 text-balance text-[clamp(1.625rem,6vw+0.35rem,3.25rem)] font-bold leading-tight tracking-tight text-white">
             Analyze your{" "}
-            <span className="text-[#f97316]">resume</span> with{" "}
+            <span className="text-orange-500">resume</span> with{" "}
             <span className="relative inline-block px-0.5">
               <span
-                className="animate-glow-ai-halo pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[2em] w-[2.25em] rounded-full bg-[#f97316]/25 blur-xl motion-reduce:animate-none"
+                className="animate-glow-ai-halo pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[2em] w-[2.25em] rounded-full bg-orange-500/25 blur-xl motion-reduce:animate-none"
                 aria-hidden
               />
-              <span className="animate-glow-ai-text relative inline-block text-[#f97316] motion-reduce:animate-none">
+              <span className="animate-glow-ai-text relative inline-block text-orange-500 motion-reduce:animate-none">
                 AI
               </span>
             </span>
           </h1>
-          <p className="mx-auto mb-4 max-w-md text-pretty text-sm leading-relaxed text-[#666666] sm:max-w-lg md:max-w-xl md:text-base">
+          <p className="mx-auto mb-4 max-w-md text-pretty text-sm leading-relaxed text-zinc-400 sm:max-w-lg md:max-w-xl md:text-base">
             Get ATS score and improve instantly
           </p>
           <div className="mx-auto flex w-full max-w-md flex-col items-stretch gap-2.5 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
@@ -136,8 +136,8 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto mt-2 max-w-2xl px-4 sm:px-6">
-        <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 backdrop-blur-sm">
-          <label className="font-mono-dm mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#f97316]">
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+          <label className="mb-1 block text-xs font-medium text-zinc-400">
             Target job title
           </label>
           <JobTitleAutocomplete
@@ -147,7 +147,7 @@ export default function LandingPage() {
             onChange={setJobTitle}
             disabled={analysisBusy || !isSignedIn}
           />
-          <label className="font-mono-dm mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#f97316]">
+          <label className="mb-1 block text-xs font-medium text-zinc-400">
             Job description
           </label>
           <textarea
@@ -160,30 +160,30 @@ export default function LandingPage() {
           <div className="flex flex-col gap-1.5">
             <label
               className={`flex items-start gap-2 text-left text-sm ${
-                canUseGeminiPolish ? "cursor-pointer text-[#666666]" : "cursor-not-allowed text-[#666666]/60"
+                canUseGeminiPolish ? "cursor-pointer text-zinc-400" : "cursor-not-allowed text-zinc-500/60"
               }`}
             >
               <input
                 type="checkbox"
-                className="mt-1 rounded border-[#2a2a2a] bg-[#1a1a1a] disabled:opacity-40"
+                className="mt-1 rounded border-white/10 bg-white/5 disabled:opacity-40"
                 checked={enhanceWithGemini}
                 onChange={(e) => setEnhanceWithGemini(e.target.checked)}
                 disabled={analysisBusy || !canUseGeminiPolish}
               />
               <span>
-                Add <span className="text-[#4ECDC4]">Gemini</span> polish.
+                Add <span className="text-emerald-400">Gemini</span> polish.
               </span>
             </label>
             {!isSignedIn && (
-              <p className="text-[11px] text-[#666666]">Sign in to enable Gemini polish.</p>
+              <p className="text-[11px] text-zinc-500">Sign in to enable Gemini polish.</p>
             )}
             {isSignedIn && !isPremium && !hasOwnKey && (
-              <p className="text-[11px] text-[#666666]">
-                <Link href="/dashboard" className="font-medium text-[#f97316] underline-offset-2 hover:underline">
+              <p className="text-[11px] text-zinc-500">
+                <Link href="/dashboard" className="font-medium text-orange-400 underline-offset-2 hover:underline">
                   Add your Gemini API key
                 </Link>{" "}
                 for free, or{" "}
-                <Link href="/pricing" className="font-medium text-[#f97316] underline-offset-2 hover:underline">
+                <Link href="/pricing" className="font-medium text-orange-400 underline-offset-2 hover:underline">
                   upgrade
                 </Link>
                 .
@@ -194,7 +194,7 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto mt-6 max-w-6xl px-6 pb-0" aria-label="Analysis preview">
-        <p className="mb-3 text-center text-sm font-medium tracking-tight text-[#666666] md:text-base">
+        <p className="mb-3 text-center text-sm font-medium tracking-tight text-zinc-500 md:text-base">
           Pipeline — upload to run
         </p>
         <div className="mb-6">
@@ -212,28 +212,27 @@ export default function LandingPage() {
             />
           </SignedIn>
           <SignedOut>
-            <div className="flex justify-center rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-6 py-8">
+            <div className="flex justify-center rounded-xl border border-white/10 bg-white/5 px-6 py-8">
               <GoogleSignInButton className={heroGoogle} />
             </div>
           </SignedOut>
         </div>
 
-        <div className="mt-10 border-t border-[#2a2a2a] py-8">
+        <div className="mt-10 border-t border-white/[0.06] py-8">
           <div className="flex flex-col items-center gap-3">
-            <p className="w-full text-center text-sm leading-normal text-[#666666]">
-              <span className="font-semibold tabular-nums text-[#f97316]">1,000+</span>
-              <span className="text-[#666666]"> </span>
+            <p className="w-full text-center text-sm leading-normal text-zinc-500">
+              <span className="font-semibold tabular-nums text-orange-400/95">1,000+</span>{" "}
               resumes analyzed successfully
             </p>
-            <div className="w-full border-t border-[#2a2a2a] pt-4">
-              <p className="mb-2 text-center text-xs font-medium tracking-tight text-[#666666] sm:text-sm">
+            <div className="w-full border-t border-white/[0.06] pt-4">
+              <p className="mb-2 text-center text-xs font-medium tracking-tight text-zinc-500 sm:text-sm">
                 Trusted by teams at
               </p>
               <div className="grid grid-cols-2 place-items-center gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-3 md:gap-4">
                 {["Acme", "Northwind", "Globex", "Umbrella", "Stark"].map((name) => (
                   <span
                     key={name}
-                    className="w-full max-w-[160px] cursor-default rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-[#666666] transition-all duration-300 ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.04] hover:border-[#f97316]/50 hover:bg-[#1a1a1a] hover:text-[#f0f0f0] hover:shadow-[0_0_24px_rgba(232,134,58,0.12)] sm:w-auto sm:max-w-none sm:px-5 sm:py-2.5 sm:text-xs"
+                    className="w-full max-w-[160px] cursor-default rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-zinc-500 transition-all duration-300 ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.04] hover:border-orange-500/35 hover:bg-white/[0.06] hover:text-white hover:shadow-[0_0_24px_rgba(249,115,22,0.12)] sm:w-auto sm:max-w-none sm:px-5 sm:py-2.5 sm:text-xs"
                   >
                     {name}
                   </span>
@@ -244,9 +243,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-12 max-w-6xl border-t border-[#2a2a2a] px-6 py-16">
+      <section className="mx-auto mt-12 max-w-6xl border-t border-white/[0.06] px-6 py-16">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-syne mb-5 text-3xl font-extrabold tracking-tight text-[#f0f0f0] md:text-4xl">
+          <h2 className="mb-5 text-3xl font-bold tracking-tight text-white md:text-4xl">
             Get your resume reviewed in seconds
           </h2>
           <div className="mt-4 flex justify-center">
