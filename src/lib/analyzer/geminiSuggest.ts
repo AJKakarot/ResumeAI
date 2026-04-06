@@ -18,9 +18,10 @@ export async function enhanceAnalyzeWithGemini(
   base: AnalyzeResult,
   resumeText: string,
   jobTitle: string,
-  jobDescription: string
+  jobDescription: string,
+  userProvidedKey?: string
 ): Promise<string[] | null> {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  const apiKey = userProvidedKey?.trim() || process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) return null;
 
   const modelName = resolveGeminiModel(process.env.GEMINI_MODEL);

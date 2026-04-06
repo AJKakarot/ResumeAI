@@ -11,6 +11,7 @@ import { MarketingShell } from "./MarketingShell";
 import { AnalysisTerminal } from "./AnalysisTerminal";
 import { GoogleSignInButton } from "./GoogleSignInButton";
 import { JobTitleAutocomplete } from "./JobTitleAutocomplete";
+import { hasUserGeminiKey } from "@/lib/userGeminiKey";
 
 const heroPrimarySignedIn =
   "btn btn-primary min-h-[48px] w-full rounded-xl border-0 px-6 text-sm font-medium transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-45 sm:w-auto sm:min-w-[200px] sm:px-8";
@@ -25,7 +26,7 @@ const ctaBottomBtn =
   "inline-flex w-full max-w-xs items-center justify-center rounded-lg border-0 bg-orange-500 px-6 py-3 text-sm font-medium text-black transition-all duration-300 hover:scale-[1.03] hover:bg-orange-400 disabled:pointer-events-none disabled:opacity-45 sm:w-auto sm:max-w-none";
 
 const fieldClass =
-  "w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 outline-none ring-orange-500/30 focus:border-orange-500/40 focus:ring-2";
+  "w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-[#f0f0f0] placeholder:text-[#666666] outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -34,7 +35,9 @@ export default function LandingPage() {
     () => isPremiumPublicMetadata(user?.publicMetadata as Record<string, unknown> | undefined),
     [user]
   );
-  const canUseGeminiPolish = Boolean(isSignedIn && isPremium);
+  const [hasOwnKey, setHasOwnKey] = useState(false);
+  useEffect(() => { setHasOwnKey(hasUserGeminiKey()); }, []);
+  const canUseGeminiPolish = Boolean(isSignedIn && (isPremium || hasOwnKey));
 
   const inputRef = useRef<HTMLInputElement>(null);
   const pickFile = () => inputRef.current?.click();
@@ -73,24 +76,21 @@ export default function LandingPage() {
     <MarketingShell>
       <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
         <div className="relative mx-auto max-w-3xl text-center">
-          <h1 className="mb-4 text-balance text-[clamp(1.625rem,6vw+0.35rem,3.25rem)] font-semibold leading-tight tracking-tight text-white">
+          <h1 className="font-syne mb-4 text-balance text-[clamp(1.625rem,6vw+0.35rem,3.25rem)] font-extrabold leading-tight tracking-tight text-[#f0f0f0]">
             Analyze your{" "}
-            <span className="bg-gradient-to-r from-orange-300 via-orange-400 to-orange-500 bg-clip-text text-transparent">
-              resume
-            </span>{" "}
-            with{" "}
+            <span className="text-[#f97316]">resume</span> with{" "}
             <span className="relative inline-block px-0.5">
               <span
-                className="animate-glow-ai-halo pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[2em] w-[2.25em] rounded-full bg-orange-500/25 blur-xl motion-reduce:animate-none"
+                className="animate-glow-ai-halo pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[2em] w-[2.25em] rounded-full bg-[#f97316]/25 blur-xl motion-reduce:animate-none"
                 aria-hidden
               />
-              <span className="animate-glow-ai-text relative inline-block bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text font-semibold text-transparent motion-reduce:animate-none">
+              <span className="animate-glow-ai-text relative inline-block text-[#f97316] motion-reduce:animate-none">
                 AI
               </span>
             </span>
           </h1>
-          <p className="mx-auto mb-4 max-w-md text-pretty text-sm leading-relaxed text-zinc-400 sm:max-w-lg md:max-w-xl md:text-base">
-          Get ATS score and improve instantly
+          <p className="mx-auto mb-4 max-w-md text-pretty text-sm leading-relaxed text-[#666666] sm:max-w-lg md:max-w-xl md:text-base">
+            Get ATS score and improve instantly
           </p>
           <div className="mx-auto flex w-full max-w-md flex-col items-stretch gap-2.5 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
             <SignedOut>
@@ -119,6 +119,9 @@ export default function LandingPage() {
               <Link href="/editor" className={outlineBtn}>
                 Career guide
               </Link>
+              <Link href="/builder" className={outlineBtn}>
+                Build My Resume
+              </Link>
             </SignedIn>
           </div>
         </div>
@@ -133,8 +136,10 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto mt-2 max-w-2xl px-4 sm:px-6">
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-sm">
-          <label className="mb-1 block text-[11px] uppercase tracking-wide text-zinc-500">Target job title</label>
+        <div className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 backdrop-blur-sm">
+          <label className="font-mono-dm mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#f97316]">
+            Target job title
+          </label>
           <JobTitleAutocomplete
             className={`${fieldClass} mb-3`}
             placeholder=" e.g. Senior Full-Stack Engineer"
@@ -142,7 +147,9 @@ export default function LandingPage() {
             onChange={setJobTitle}
             disabled={analysisBusy || !isSignedIn}
           />
-          <label className="mb-1 block text-[11px] uppercase tracking-wide text-zinc-500">Job description</label>
+          <label className="font-mono-dm mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#f97316]">
+            Job description
+          </label>
           <textarea
             className={`${fieldClass} mb-3 min-h-[88px] resize-y`}
             placeholder="Paste JD → Get match & insights."
@@ -153,28 +160,31 @@ export default function LandingPage() {
           <div className="flex flex-col gap-1.5">
             <label
               className={`flex items-start gap-2 text-left text-sm ${
-                canUseGeminiPolish ? "cursor-pointer text-zinc-400" : "cursor-not-allowed text-zinc-600"
+                canUseGeminiPolish ? "cursor-pointer text-[#666666]" : "cursor-not-allowed text-[#666666]/60"
               }`}
             >
               <input
                 type="checkbox"
-                className="mt-1 rounded border-white/20 disabled:opacity-40"
+                className="mt-1 rounded border-[#2a2a2a] bg-[#1a1a1a] disabled:opacity-40"
                 checked={enhanceWithGemini}
                 onChange={(e) => setEnhanceWithGemini(e.target.checked)}
                 disabled={analysisBusy || !canUseGeminiPolish}
               />
               <span>
-                Add <span className="text-orange-400/95">Gemini</span> polish.
+                Add <span className="text-[#4ECDC4]">Gemini</span> polish.
               </span>
             </label>
             {!isSignedIn && (
-              <p className="text-[11px] text-zinc-500">Sign in to enable Gemini polish.</p>
+              <p className="text-[11px] text-[#666666]">Sign in to enable Gemini polish.</p>
             )}
-            {isSignedIn && !isPremium && (
-              <p className="text-[11px] text-zinc-500">
-                Upgrade to enable —{" "}
-                <Link href="/pricing" className="font-medium text-orange-400/95 underline-offset-2 hover:underline">
-                  view plans
+            {isSignedIn && !isPremium && !hasOwnKey && (
+              <p className="text-[11px] text-[#666666]">
+                <Link href="/dashboard" className="font-medium text-[#f97316] underline-offset-2 hover:underline">
+                  Add your Gemini API key
+                </Link>{" "}
+                for free, or{" "}
+                <Link href="/pricing" className="font-medium text-[#f97316] underline-offset-2 hover:underline">
+                  upgrade
                 </Link>
                 .
               </p>
@@ -184,7 +194,7 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto mt-6 max-w-6xl px-6 pb-0" aria-label="Analysis preview">
-        <p className="mb-3 text-center text-sm font-medium tracking-tight text-zinc-400 md:text-base">
+        <p className="mb-3 text-center text-sm font-medium tracking-tight text-[#666666] md:text-base">
           Pipeline — upload to run
         </p>
         <div className="mb-6">
@@ -202,28 +212,28 @@ export default function LandingPage() {
             />
           </SignedIn>
           <SignedOut>
-            <div className="flex justify-center rounded-xl border border-white/10 bg-white/[0.02] px-6 py-8">
+            <div className="flex justify-center rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-6 py-8">
               <GoogleSignInButton className={heroGoogle} />
             </div>
           </SignedOut>
         </div>
 
-        <div className="mt-10 border-t border-white/[0.08] py-8">
+        <div className="mt-10 border-t border-[#2a2a2a] py-8">
           <div className="flex flex-col items-center gap-3">
-            <p className="w-full text-center text-sm leading-normal text-zinc-400">
-              <span className="font-semibold tabular-nums text-orange-400/95">1,000+</span>
-              <span className="text-zinc-500"> </span>
+            <p className="w-full text-center text-sm leading-normal text-[#666666]">
+              <span className="font-semibold tabular-nums text-[#f97316]">1,000+</span>
+              <span className="text-[#666666]"> </span>
               resumes analyzed successfully
             </p>
-            <div className="w-full border-t border-white/[0.06] pt-4">
-              <p className="mb-2 text-center text-xs font-medium tracking-tight text-zinc-500 sm:text-sm">
+            <div className="w-full border-t border-[#2a2a2a] pt-4">
+              <p className="mb-2 text-center text-xs font-medium tracking-tight text-[#666666] sm:text-sm">
                 Trusted by teams at
               </p>
               <div className="grid grid-cols-2 place-items-center gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-3 md:gap-4">
                 {["Acme", "Northwind", "Globex", "Umbrella", "Stark"].map((name) => (
                   <span
                     key={name}
-                    className="w-full max-w-[160px] cursor-default rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-zinc-500 transition-all duration-300 ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.04] hover:border-white/35 hover:bg-white/[0.12] hover:text-white hover:shadow-[0_0_28px_rgba(255,255,255,0.18)] sm:w-auto sm:max-w-none sm:px-5 sm:py-2.5 sm:text-xs"
+                    className="w-full max-w-[160px] cursor-default rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-center text-[10px] font-medium uppercase tracking-wider text-[#666666] transition-all duration-300 ease-out motion-safe:hover:-translate-y-0.5 motion-safe:hover:scale-[1.04] hover:border-[#f97316]/50 hover:bg-[#1a1a1a] hover:text-[#f0f0f0] hover:shadow-[0_0_24px_rgba(232,134,58,0.12)] sm:w-auto sm:max-w-none sm:px-5 sm:py-2.5 sm:text-xs"
                   >
                     {name}
                   </span>
@@ -234,9 +244,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-12 max-w-6xl border-t border-white/10 px-6 py-16">
+      <section className="mx-auto mt-12 max-w-6xl border-t border-[#2a2a2a] px-6 py-16">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="mb-5 text-3xl font-semibold tracking-tight text-white md:text-4xl">
+          <h2 className="font-syne mb-5 text-3xl font-extrabold tracking-tight text-[#f0f0f0] md:text-4xl">
             Get your resume reviewed in seconds
           </h2>
           <div className="mt-4 flex justify-center">

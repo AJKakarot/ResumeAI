@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth, useUser } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
@@ -38,6 +39,7 @@ function loadRazorpayScript(): Promise<boolean> {
 }
 
 export function PricingSection({ onPickFile, onPro, onCheckoutRazorpay }: PricingSectionProps) {
+  const router = useRouter();
   const { isLoaded, userId } = useAuth();
   const { user } = useUser();
   const [razorpayBusy, setRazorpayBusy] = useState(false);
@@ -162,25 +164,28 @@ export function PricingSection({ onPickFile, onPro, onCheckoutRazorpay }: Pricin
           </p>
         </div>
 
-
-        <div className="mx-auto mt-10 grid max-w-4xl grid-cols-1 gap-5 sm:mt-12 sm:gap-6 md:grid-cols-2">
+        <div className="mx-auto mt-10 grid max-w-5xl grid-cols-1 gap-5 sm:mt-12 sm:gap-6 md:grid-cols-3">
+          {/* ── Free ── */}
           <div className="flex flex-col rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 transition-all duration-300 hover:border-white/[0.12] sm:p-8">
             <h2 className="text-lg font-semibold text-white">Free</h2>
             <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              $0<span className="text-base font-normal text-zinc-500">/mo</span>
+              ₹0<span className="text-base font-normal text-zinc-500">/forever</span>
             </p>
-            <ul className="mt-8 flex flex-col gap-3 text-sm text-zinc-400">
+            <ul className="mt-8 flex flex-1 flex-col gap-3 text-sm text-zinc-400">
               <li className="flex gap-2">
                 <span className="text-orange-500/90">✓</span> 3 analyses / month
               </li>
               <li className="flex gap-2">
-                <span className="text-orange-500/90">✓</span> ATS score & summary
+                <span className="text-orange-500/90">✓</span> ATS score &amp; summary
               </li>
               <li className="flex gap-2">
                 <span className="text-orange-500/90">✓</span> Basic suggestions
               </li>
               <li className="flex gap-2">
                 <span className="text-orange-500/90">✓</span> Up to 2 resumes on dashboard
+              </li>
+              <li className="flex gap-2">
+                <span className="text-orange-500/90">✓</span> Resume builder (2 templates)
               </li>
             </ul>
             <button
@@ -197,27 +202,66 @@ export function PricingSection({ onPickFile, onPro, onCheckoutRazorpay }: Pricin
             </button>
           </div>
 
+          {/* ── Bring Your Own Key ── */}
+          <div className="flex flex-col rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-emerald-500/[0.06] to-transparent p-6 transition-all duration-300 hover:border-emerald-400/45 sm:p-8">
+            <span className="mb-2 w-fit rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+              Free + AI
+            </span>
+            <h2 className="text-lg font-semibold text-white">Your API Key</h2>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+              ₹0<span className="text-base font-normal text-zinc-500">/forever</span>
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-zinc-500">
+              Add your own Gemini API key in Dashboard — all AI features unlocked, zero cost from us.
+            </p>
+            <ul className="mt-6 flex flex-1 flex-col gap-3 text-sm text-zinc-300">
+              <li className="flex gap-2">
+                <span className="text-emerald-400">✓</span> Everything in Free
+              </li>
+              <li className="flex gap-2">
+                <span className="text-emerald-400">✓</span> Gemini polish &amp; deep ATS report
+              </li>
+              <li className="flex gap-2">
+                <span className="text-emerald-400">✓</span> AI-powered suggestions
+              </li>
+              <li className="flex gap-2">
+                <span className="text-emerald-400">✓</span> Your key, your quota
+              </li>
+            </ul>
+            <button
+              type="button"
+              className="btn mt-6 min-h-[48px] w-full rounded-xl border border-emerald-500/35 bg-emerald-500/10 text-sm font-semibold text-emerald-100 transition-all hover:bg-emerald-500/20 active:scale-[0.99] sm:mt-8"
+              onClick={() => router.push("/dashboard")}
+            >
+              Add key in Dashboard
+            </button>
+          </div>
+
+          {/* ── Pro ── */}
           <div className="relative flex flex-col rounded-2xl border border-orange-500/40 bg-gradient-to-b from-orange-500/[0.08] to-transparent p-6 shadow-[0_0_50px_-18px_rgba(249,115,22,0.35)] transition-all duration-300 hover:border-orange-400/55 sm:p-8">
             <span className="badge badge-primary badge-sm mb-2 w-fit">Popular</span>
             <h2 className="text-lg font-semibold text-white">Pro</h2>
             <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              $12<span className="text-base font-normal text-zinc-500">/mo</span>
+              ₹29<span className="text-base font-normal text-zinc-500">/mo</span>
             </p>
-            <ul className="mt-8 flex flex-col gap-3 text-sm text-zinc-300">
+            <ul className="mt-8 flex flex-1 flex-col gap-3 text-sm text-zinc-300">
               <li className="flex gap-2">
                 <span className="text-orange-400">✓</span> Unlimited analyses
               </li>
               <li className="flex gap-2">
-                <span className="text-orange-400">✓</span> Deep keyword & role fit
+                <span className="text-orange-400">✓</span> Deep keyword &amp; role fit
               </li>
               <li className="flex gap-2">
-                <span className="text-orange-400">✓</span> Rewrite blocks & export
+                <span className="text-orange-400">✓</span> Rewrite blocks &amp; export
               </li>
               <li className="flex gap-2">
                 <span className="text-orange-400">✓</span> Priority processing
               </li>
               <li className="flex gap-2">
-                <span className="text-orange-400">✓</span> Gemini polish &amp; premium features
+                <span className="text-orange-400">✓</span> Gemini polish — no key needed
+              </li>
+              <li className="flex gap-2">
+                <span className="text-orange-400">✓</span> Unlimited dashboard resumes
               </li>
             </ul>
 

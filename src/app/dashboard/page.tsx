@@ -9,6 +9,7 @@ import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
 import { Navbar } from "@/components/Navbar";
 import { PlanBadge } from "@/components/PlanBadge";
 import { DashboardResumeSection } from "@/components/dashboard/DashboardResumeSection";
+import { GeminiKeyCard } from "@/components/dashboard/GeminiKeyCard";
 
 const ease = [0.25, 0.1, 0.25, 1] as const;
 
@@ -87,15 +88,17 @@ export default function DashboardPage() {
             </p>
             {!isPro && (
               <p className="mt-2 max-w-full text-pretty text-xs leading-relaxed text-zinc-500">
-                You&apos;re on the <span className="font-medium text-sky-400/95">Free</span> plan — up to 2 resumes on the dashboard, basic analysis limits, and no Gemini polish until you upgrade.{" "}
+                You&apos;re on the <span className="font-medium text-sky-400/95">Free</span> plan — up to 2 resumes on the dashboard and basic analysis limits. Add your Gemini API key below to unlock AI features for free, or{" "}
                 <Link href="/pricing" className="font-medium text-sky-400/95 underline-offset-2 hover:underline">
-                  View pricing
+                  upgrade to Pro (₹29/mo)
                 </Link>
               </p>
             )}
           </motion.div>
 
           <DashboardResumeSection />
+
+          <GeminiKeyCard />
         </motion.div>
       </motion.div>
     </div>

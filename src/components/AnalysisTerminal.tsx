@@ -13,6 +13,7 @@ import type { AtsGeminiReport } from "@/lib/atsGeminiReport";
 import { looksLikeResumeText, RESUME_LIKENESS_ERROR } from "@/lib/looksLikeResume";
 import { ANALYZE_API_ROTATING_TOAST_ID, useRotatingLoadingToast } from "@/lib/rotatingLoadingToast";
 import { brandToast } from "@/lib/toast";
+import { getUserGeminiKey } from "@/lib/userGeminiKey";
 
 type LineKind = "command" | "muted" | "accent" | "warning" | "tip";
 
@@ -43,15 +44,15 @@ function delay(ms: number) {
 function lineClass(kind: LineKind) {
   switch (kind) {
     case "command":
-      return "text-emerald-400/95";
+      return "text-[#4ECDC4]";
     case "accent":
-      return "text-orange-400/95";
+      return "text-[#f97316]";
     case "warning":
       return "text-amber-400/90";
     case "tip":
-      return "text-orange-400/90";
+      return "text-[#f97316]/95";
     default:
-      return "text-zinc-500";
+      return "text-[#666666]";
   }
 }
 
@@ -236,6 +237,7 @@ export function AnalysisTerminal({
       try {
         setWaitingOnRemoteApi(true);
         try {
+          const userGeminiKey = getUserGeminiKey();
           const res = await fetch("/api/analyze", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -244,6 +246,7 @@ export function AnalysisTerminal({
               jobTitle,
               jobDescription,
               enhanceWithGemini,
+              ...(userGeminiKey ? { userGeminiKey } : {}),
             }),
           });
           const j = (await res.json()) as AnalyzeResult & { error?: string };
@@ -343,16 +346,18 @@ export function AnalysisTerminal({
         }
       }
 
-      if (enhanceWithGemini && isPro && uid) {
+      const canGeminiAts = isPro || getUserGeminiKey().length > 0;
+      if (enhanceWithGemini && canGeminiAts && uid) {
         push("→ Gemini ATS deep analysis (JSON)...", "muted");
         await delay(STEP_MS());
         try {
           setWaitingOnRemoteApi(true);
           try {
+            const atsUserKey = getUserGeminiKey();
             const atsRes = await fetch("/api/ats-gemini", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ text }),
+              body: JSON.stringify({ text, ...(atsUserKey ? { userGeminiKey: atsUserKey } : {}) }),
             });
             const atsJson = (await atsRes.json()) as { report?: AtsGeminiReport; error?: string };
             if (!atsRes.ok) throw new Error(atsJson.error ?? "ATS analysis failed");
@@ -398,32 +403,32 @@ export function AnalysisTerminal({
         initial={{ opacity: 0.92 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-        className="overflow-hidden rounded-xl border border-white/10 bg-white/5 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.5)] backdrop-blur-md"
+        className="overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] shadow-[0_8px_32px_-12px_rgba(0,0,0,0.5)] backdrop-blur-md"
       >
-        <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.04] px-3 py-2 sm:px-4">
+        <div className="flex items-center justify-between border-b border-[#2a2a2a] bg-[#141414] px-3 py-2 sm:px-4">
           <div className="flex min-w-0 items-center gap-2">
             <div className="flex shrink-0 gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]/90" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]/90" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f]/90" />
             </div>
-            <span className="hidden font-mono text-[10px] text-zinc-500 sm:inline sm:text-[11px]">
+            <span className="font-mono-dm hidden text-[10px] text-[#666666] sm:inline sm:text-[11px]">
               pipeline.log
             </span>
           </div>
-          <span className="truncate font-mono text-[10px] text-zinc-500 sm:text-xs">
+          <span className="font-mono-dm truncate text-[10px] text-[#666666] sm:text-xs">
             resume-ai — analyze
           </span>
         </div>
 
         <div
-          className={`flex min-h-0 ${TERMINAL_BODY_H} font-mono text-[10px] leading-snug sm:text-[11px] md:text-xs md:leading-snug`}
+          className={`flex min-h-0 ${TERMINAL_BODY_H} font-mono-dm text-[10px] leading-snug sm:text-[11px] md:text-xs md:leading-snug`}
         >
           <div
             ref={scrollContentRef}
             className="flex min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain"
           >
-            <div className="select-none shrink-0 border-r border-white/10 bg-black/20 px-2 py-2 text-right text-zinc-600 sm:px-3 sm:py-2.5">
+            <div className="font-mono-dm select-none shrink-0 border-r border-[#2a2a2a] bg-[#0a0a0a] px-2 py-2 text-right text-[#666666] sm:px-3 sm:py-2.5">
               {Array.from({ length: gutterCount }, (_, i) => (
                 <div key={i} className="tabular-nums leading-snug">
                   {i + 1}
@@ -445,7 +450,7 @@ export function AnalysisTerminal({
                   <p className={`mb-0 text-left whitespace-pre-wrap break-all ${lineClass(idleDisplay[lineIdx].kind)}`}>
                     {idleDisplay[lineIdx].text.slice(0, charIdx)}
                     <span
-                      className="ml-0.5 inline-block h-[1.1em] w-px translate-y-0.5 animate-pulse bg-orange-500/80 align-middle motion-reduce:animate-none"
+                      className="ml-0.5 inline-block h-[1.1em] w-px translate-y-0.5 animate-pulse bg-[#f97316]/80 align-middle motion-reduce:animate-none"
                       aria-hidden
                     />
                   </p>
@@ -463,16 +468,16 @@ export function AnalysisTerminal({
                 ))}
                 {isRunning && (
                   <p
-                    className="text-zinc-500"
+                    className="text-[#666666]"
                     aria-live="polite"
                     aria-busy="true"
                   >
-                    <span className="text-orange-400/90">→ generating response</span>
-                    <span className="ml-0.5 inline-block min-w-[1.25em] font-mono text-zinc-400 tabular-nums">
+                    <span className="text-[#f97316]/95">→ generating response</span>
+                    <span className="ml-0.5 inline-block min-w-[1.25em] font-mono-dm text-[#666666] tabular-nums">
                       {generatingDots}
                     </span>
                     <span
-                      className="ml-1 inline-block h-[1.1em] w-px animate-pulse bg-orange-500/80 align-middle motion-reduce:animate-none"
+                      className="ml-1 inline-block h-[1.1em] w-px animate-pulse bg-[#f97316]/80 align-middle motion-reduce:animate-none"
                       aria-hidden
                     />
                     <span className="sr-only">Generating response, please wait.</span>
@@ -485,11 +490,11 @@ export function AnalysisTerminal({
         </div>
 
         {!isPreview && showEditorCta && onViewResume && (
-          <div className="border-t border-white/10 bg-black/20 px-3 py-3 sm:px-4">
+          <div className="border-t border-[#2a2a2a] bg-[#0a0a0a] px-3 py-3 sm:px-4">
             <button
               type="button"
               onClick={onViewResume}
-              className="w-full rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-semibold text-black transition-all duration-300 hover:bg-orange-400 active:scale-[0.99]"
+              className="w-full rounded-full bg-[#f97316] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:brightness-105 active:scale-[0.99]"
             >
               {atsReportReady ? "View resume & ATS report" : "View resume"}
             </button>
@@ -503,7 +508,7 @@ export function AnalysisTerminal({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="mt-3 text-center text-xs text-zinc-500"
+            className="mt-3 text-center text-xs text-[#666666]"
           >
             Fix the file and upload again.
           </motion.p>

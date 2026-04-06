@@ -28,6 +28,7 @@ export async function POST(req: Request) {
     jobTitle?: unknown;
     jobDescription?: unknown;
     enhanceWithGemini?: unknown;
+    userGeminiKey?: unknown;
   };
 
   const text = typeof b.text === "string" ? b.text : "";
@@ -41,11 +42,13 @@ export async function POST(req: Request) {
   const jobTitle = typeof b.jobTitle === "string" ? b.jobTitle : "";
   const jobDescription = typeof b.jobDescription === "string" ? b.jobDescription : "";
   const wantGemini = Boolean(b.enhanceWithGemini);
+  const userGeminiKey = typeof b.userGeminiKey === "string" ? b.userGeminiKey.trim() : "";
 
   const { userId } = await auth();
   const user = userId ? await currentUser() : null;
   const meta = (user?.publicMetadata ?? undefined) as Record<string, unknown> | undefined;
   const isPro = Boolean(userId && isPremiumPublicMetadata(meta));
+  const hasOwnKey = userGeminiKey.length > 0;
 
   let result = analyzeResume(text, { jobTitle, jobDescription });
 
@@ -56,10 +59,10 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
-    if (!isPro) {
+    if (!isPro && !hasOwnKey) {
       return NextResponse.json(
         {
-          error: "Gemini polish requires a paid plan. Upgrade or contact support.",
+          error: "Gemini polish requires a paid plan or your own API key. Add one in Dashboard → Gemini API Key.",
           code: "GEMINI_PREMIUM_REQUIRED",
         },
         { status: 403 }
@@ -69,7 +72,7 @@ export async function POST(req: Request) {
     const rl = checkGeminiRateLimit({
       userId,
       clientIp: ip,
-      isPro: true,
+      isPro: isPro || hasOwnKey,
       estimatedTokens: estimateGeminiTokensFromChars(
         text.length + jobTitle.length + jobDescription.length + JSON.stringify(result).length,
         1200
@@ -77,7 +80,7 @@ export async function POST(req: Request) {
     });
     if (!rl.ok) return geminiRateLimitJsonResponse(rl);
 
-    const ai = await enhanceAnalyzeWithGemini(result, text, jobTitle, jobDescription);
+    const ai = await enhanceAnalyzeWithGemini(result, text, jobTitle, jobDescription, hasOwnKey ? userGeminiKey : undefined);
     if (ai?.length) {
       result = {
         ...result,

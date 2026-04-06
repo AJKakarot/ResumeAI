@@ -33,8 +33,7 @@ export function FeaturesSection() {
             Smarter resumes
           </h2>
           <p className="mt-3 text-sm text-zinc-400 sm:mt-4 sm:text-base">
-            ATS scan, JD fit, career guide—optional <span className="text-orange-400/95">Gemini</span> polish on paid
-            plans.
+            ATS scan, JD fit, resume builder, career guide — unlock <span className="text-orange-400/95">Gemini</span> AI free with your own API key or go Pro.
           </p>
         </div>
 
@@ -55,14 +54,22 @@ export function FeaturesSection() {
           })}
         </div>
 
-        <p className="mx-auto mt-12 max-w-lg text-center text-xs leading-relaxed text-zinc-500 sm:mt-14">
-          Free tier includes core analysis; paid plans add higher limits, deeper fit, and{" "}
-          <span className="text-orange-400/85">Gemini</span> polish where enabled.{" "}
+        <div className="mx-auto mt-12 max-w-xl rounded-xl border border-orange-500/20 bg-orange-500/[0.04] px-5 py-4 text-center sm:mt-14">
+          <p className="text-sm font-medium text-orange-300/90">
+            More resume templates coming soon!
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">
+            We&apos;re building new designs — Modern, Minimal, Creative &amp; more. Stay tuned.
+          </p>
+        </div>
+
+        <p className="mx-auto mt-6 max-w-lg text-center text-xs leading-relaxed text-zinc-500">
+          Free forever — add your Gemini key for AI, or go{" "}
           <Link
             href="/pricing"
             className="font-medium text-orange-400 underline-offset-2 transition-colors hover:text-orange-300 hover:underline"
           >
-            Compare plans
+            Pro ₹29/mo
           </Link>
           .
         </p>
