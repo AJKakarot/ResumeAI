@@ -412,23 +412,23 @@ export function AnalysisTerminal({
               <span className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]/90" />
               <span className="h-2.5 w-2.5 rounded-full bg-[#27c93f]/90" />
             </div>
-            <span className="font-mono-dm hidden text-[10px] text-[#666666] sm:inline sm:text-[11px]">
+            <span className="hidden font-mono text-[10px] text-zinc-500 sm:inline sm:text-[11px]">
               pipeline.log
             </span>
           </div>
-          <span className="font-mono-dm truncate text-[10px] text-[#666666] sm:text-xs">
+          <span className="truncate font-mono text-[10px] text-zinc-500 sm:text-xs">
             resume-ai — analyze
           </span>
         </div>
 
         <div
-          className={`flex min-h-0 ${TERMINAL_BODY_H} font-mono-dm text-[10px] leading-snug sm:text-[11px] md:text-xs md:leading-snug`}
+          className={`flex min-h-0 ${TERMINAL_BODY_H} font-mono text-[10px] leading-snug sm:text-[11px] md:text-xs md:leading-snug`}
         >
           <div
             ref={scrollContentRef}
             className="flex min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain"
           >
-            <div className="font-mono-dm select-none shrink-0 border-r border-[#2a2a2a] bg-[#0a0a0a] px-2 py-2 text-right text-[#666666] sm:px-3 sm:py-2.5">
+            <div className="select-none shrink-0 font-mono border-r border-white/10 bg-black/30 px-2 py-2 text-right text-zinc-600 sm:px-3 sm:py-2.5">
               {Array.from({ length: gutterCount }, (_, i) => (
                 <div key={i} className="tabular-nums leading-snug">
                   {i + 1}
@@ -473,7 +473,7 @@ export function AnalysisTerminal({
                     aria-busy="true"
                   >
                     <span className="text-[#f97316]/95">→ generating response</span>
-                    <span className="ml-0.5 inline-block min-w-[1.25em] font-mono-dm text-[#666666] tabular-nums">
+                    <span className="ml-0.5 inline-block min-w-[1.25em] font-mono text-zinc-500 tabular-nums">
                       {generatingDots}
                     </span>
                     <span

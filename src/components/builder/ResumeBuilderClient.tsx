@@ -10,26 +10,26 @@ import { EMPTY_RESUME, type ResumeData } from "@/components/templates/types";
 type TemplateId = "pro" | "latex";
 
 const inputCls =
-  "w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-[#f0f0f0] placeholder:text-[#666666] outline-none focus:border-[#f97316] focus:ring-2 focus:ring-[#f97316]/20";
+  "w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 outline-none focus:border-orange-500/40 focus:ring-2 focus:ring-orange-500/20";
 
 const labelCls =
-  "font-mono-dm mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-[#f97316]";
+  "mb-1.5 block text-xs font-medium text-zinc-400";
 
 const addBtnCls =
-  "rounded-full border border-[#f97316] bg-transparent px-4 py-1.5 text-xs font-medium text-[#f97316] transition-all duration-200 hover:bg-[#f97316] hover:text-white";
+  "rounded-full border border-orange-500 bg-transparent px-4 py-1.5 text-xs font-medium text-orange-500 transition-all duration-200 hover:bg-orange-500 hover:text-white";
 
 const sectionHeadCls =
-  "font-mono-dm text-xs font-medium uppercase tracking-wider text-[#f97316]";
+  "text-xs font-semibold uppercase tracking-wider text-orange-400";
 
 /* ─────────────────── Template Selector ─────────────────── */
 
 function TemplateSelector({ onSelect }: { onSelect: (t: TemplateId) => void }) {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-[#0a0a0a] px-4 py-16 font-sans text-[#f0f0f0]">
-      <h1 className="font-syne mb-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
+      <h1 className="mb-2 text-3xl font-bold tracking-tight sm:text-4xl">
         Choose a template
       </h1>
-      <p className="mb-10 text-sm text-[#666666]">
+      <p className="mb-10 text-sm text-zinc-500">
         You can switch anytime in the builder.
       </p>
 
@@ -42,7 +42,7 @@ function TemplateSelector({ onSelect }: { onSelect: (t: TemplateId) => void }) {
           </div>
           <div className="flex flex-1 flex-col gap-3 p-5">
             <div className="flex items-center gap-2">
-              <h2 className="font-syne text-lg font-extrabold">Modern</h2>
+              <h2 className="text-lg font-bold">Modern</h2>
               <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
                 Free
               </span>
@@ -70,7 +70,7 @@ function TemplateSelector({ onSelect }: { onSelect: (t: TemplateId) => void }) {
           </div>
           <div className="flex flex-1 flex-col gap-3 p-5">
             <div className="flex items-center gap-2">
-              <h2 className="font-syne text-lg font-extrabold">LaTeX</h2>
+              <h2 className="text-lg font-bold">LaTeX</h2>
               <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
                 Free
               </span>
@@ -366,7 +366,7 @@ body{font-family:'DM Sans',sans-serif;background:#fff}
 
         {/* ── Preview panel ── */}
         <div className="hidden lg:block">
-          <p className="font-mono-dm mb-3 text-xs font-medium uppercase tracking-wider text-[#f97316]">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-orange-400">
             Live preview
           </p>
           <div

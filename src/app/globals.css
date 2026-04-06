@@ -19,14 +19,6 @@
   --color-primary-content: #ffffff;
 }
 
-.font-syne {
-  font-family: "Syne", ui-sans-serif, system-ui, sans-serif;
-}
-
-.font-mono-dm {
-  font-family: "DM Mono", ui-monospace, monospace;
-}
-
 /* Base */
 * {
   box-sizing: border-box;
