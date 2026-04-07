@@ -3,21 +3,17 @@
 import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import { isPremiumPublicMetadata } from "@/lib/clerkPremium";
 import { brandToast } from "@/lib/toast";
 import { isValidResumeFile } from "@/lib/validateResumeFile";
 import { MarketingShell } from "./MarketingShell";
 import { AnalysisTerminal } from "./AnalysisTerminal";
-import { GoogleSignInButton } from "./GoogleSignInButton";
 import { JobTitleAutocomplete } from "./JobTitleAutocomplete";
 import { hasUserGeminiKey } from "@/lib/userGeminiKey";
 
 const heroPrimarySignedIn =
   "btn btn-primary min-h-[48px] w-full rounded-xl border-0 px-6 text-sm font-medium transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.99] disabled:pointer-events-none disabled:opacity-45 sm:w-auto sm:min-w-[200px] sm:px-8";
-
-const heroGoogle =
-  "btn min-h-[48px] w-full rounded-xl border-0 bg-gradient-to-b from-orange-500 to-orange-600 px-6 text-sm font-medium text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:from-orange-400 hover:to-orange-500 sm:w-auto sm:min-w-[220px] sm:px-8";
 
 const outlineBtn =
   "btn btn-outline min-h-[48px] w-full rounded-xl border-white/20 bg-transparent px-6 text-white transition-all duration-300 ease-out hover:scale-[1.03] hover:border-orange-500/35 hover:bg-white/[0.04] disabled:pointer-events-none disabled:opacity-45 sm:w-auto sm:min-w-[160px] sm:px-8";
@@ -94,7 +90,21 @@ export default function LandingPage() {
           </p>
           <div className="mx-auto flex w-full max-w-md flex-col items-stretch gap-2.5 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3">
             <SignedOut>
-              <GoogleSignInButton className={heroGoogle} />
+              <SignInButton mode="modal" forceRedirectUrl="/" signUpForceRedirectUrl="/">
+                <button type="button" className={`${heroPrimarySignedIn} inline-flex items-center justify-center gap-2`}>
+                  Upload Resume
+                </button>
+              </SignInButton>
+              <SignInButton mode="modal" forceRedirectUrl="/editor" signUpForceRedirectUrl="/editor">
+                <button type="button" className={outlineBtn}>
+                  Career guide
+                </button>
+              </SignInButton>
+              <SignInButton mode="modal" forceRedirectUrl="/builder" signUpForceRedirectUrl="/builder">
+                <button type="button" className={outlineBtn}>
+                  Build My Resume
+                </button>
+              </SignInButton>
             </SignedOut>
             <SignedIn>
               <button
@@ -130,8 +140,8 @@ export default function LandingPage() {
           type="file"
           accept=".pdf,.docx,.doc,.txt,application/pdf"
           className="hidden"
-          disabled={analysisBusy || !isSignedIn}
-          onChange={(e) => handleFiles(e.target.files)}
+            disabled={analysisBusy || !isSignedIn}
+            onChange={(e) => handleFiles(e.target.files)}
         />
       </section>
 
@@ -145,7 +155,7 @@ export default function LandingPage() {
             placeholder=" e.g. Senior Full-Stack Engineer"
             value={jobTitle}
             onChange={setJobTitle}
-            disabled={analysisBusy || !isSignedIn}
+            disabled={analysisBusy}
           />
           <label className="mb-1 block text-xs font-medium text-zinc-400">
             Job description
@@ -155,7 +165,7 @@ export default function LandingPage() {
             placeholder="Paste JD → Get match & insights."
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
-            disabled={analysisBusy || !isSignedIn}
+            disabled={analysisBusy}
           />
           <div className="flex flex-col gap-1.5">
             <label
@@ -175,7 +185,10 @@ export default function LandingPage() {
               </span>
             </label>
             {!isSignedIn && (
-              <p className="text-[11px] text-zinc-500">Sign in to enable Gemini polish.</p>
+              <p className="text-[11px] text-zinc-500">
+                Use <span className="font-medium text-zinc-400">Continue with Google</span> in the header to enable
+                Gemini polish.
+              </p>
             )}
             {isSignedIn && !isPremium && !hasOwnKey && (
               <p className="text-[11px] text-zinc-500">
@@ -198,24 +211,17 @@ export default function LandingPage() {
           Pipeline — upload to run
         </p>
         <div className="mb-6">
-          <SignedIn>
-            <AnalysisTerminal
-              key={runKey}
-              file={uploadFile}
-              runKey={runKey}
-              jobTitle={jobTitle}
-              jobDescription={jobDescription}
-              enhanceWithGemini={enhanceWithGemini}
-              isPro={isPremium}
-              onAnalysisComplete={onAnalysisComplete}
-              onViewResume={() => router.push("/resume-ats")}
-            />
-          </SignedIn>
-          <SignedOut>
-            <div className="flex justify-center rounded-xl border border-white/10 bg-white/5 px-6 py-8">
-              <GoogleSignInButton className={heroGoogle} />
-            </div>
-          </SignedOut>
+          <AnalysisTerminal
+            key={isSignedIn ? runKey : "preview"}
+            file={isSignedIn ? uploadFile : null}
+            runKey={isSignedIn ? runKey : 0}
+            jobTitle={jobTitle}
+            jobDescription={jobDescription}
+            enhanceWithGemini={enhanceWithGemini}
+            isPro={isPremium}
+            onAnalysisComplete={onAnalysisComplete}
+            onViewResume={() => (isSignedIn ? router.push("/resume-ats") : undefined)}
+          />
         </div>
 
         <div className="mt-10 border-t border-white/[0.06] py-8">
@@ -250,7 +256,11 @@ export default function LandingPage() {
           </h2>
           <div className="mt-4 flex justify-center">
             <SignedOut>
-              <GoogleSignInButton className={ctaBottomBtn} />
+              <SignInButton mode="modal" forceRedirectUrl="/" signUpForceRedirectUrl="/">
+                <button type="button" className={ctaBottomBtn}>
+                  Start Now
+                </button>
+              </SignInButton>
             </SignedOut>
             <SignedIn>
               <button

@@ -36,7 +36,7 @@ export function Navbar() {
         <SignedOut>
           <Link
             className="resume-ai-logo-static shrink-0 text-base font-semibold tracking-tight transition-transform duration-300 ease-out hover:scale-[1.02] sm:text-lg"
-            href="/sign-up"
+            href="/"
           >
             <span className="text-[#f0f0f0]">Resume</span>
             <span className="text-[#f97316]">AI</span>
@@ -72,12 +72,6 @@ export function Navbar() {
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           <SignedOut>
-            <Link
-              href="/sign-up"
-              className="btn btn-ghost min-h-0 px-2 text-xs font-medium text-[#666666] transition-colors hover:text-[#f0f0f0] sm:px-3 sm:text-sm"
-            >
-              Sign up
-            </Link>
             <GoogleSignInButton className={googleBtnClass} />
           </SignedOut>
           <SignedIn>

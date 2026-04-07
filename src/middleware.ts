@@ -5,11 +5,12 @@ import { NextResponse } from "next/server";
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   "/editor(.*)",
+  "/builder(.*)",
   "/resume-analyzing(.*)",
   "/resume-ats(.*)",
 ]);
 
-/** Can browse without an account (home `/` is NOT listed — it requires sign-in). */
+/** Can browse without an account (home, features, pricing, docs). */
 const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/pricing(.*)",
@@ -34,13 +35,8 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-  // Home (landing) — signed-in only
-  if (pathname === "/" && !userId) {
-    return NextResponse.redirect(new URL("/sign-up", req.url));
-  }
-
   if (isProtectedRoute(req) && !userId) {
-    return NextResponse.redirect(new URL("/sign-up", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   return NextResponse.next();

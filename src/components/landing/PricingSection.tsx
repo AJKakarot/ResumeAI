@@ -60,7 +60,7 @@ export function PricingSection({ onPickFile, onPro, onCheckoutRazorpay }: Pricin
       return;
     }
     if (!userId) {
-      toast.error("Sign in to upgrade to Pro");
+      router.push("/");
       return;
     }
     setRazorpayBusy(true);
@@ -150,7 +150,7 @@ export function PricingSection({ onPickFile, onPro, onCheckoutRazorpay }: Pricin
     } finally {
       setRazorpayBusy(false);
     }
-  }, [isLoaded, userId, isPro, razorpayUrl, user, onCheckoutRazorpay, onPro]);
+  }, [isLoaded, userId, isPro, razorpayUrl, user, router, onCheckoutRazorpay, onPro]);
 
   return (
     <section className="border-t border-white/[0.04] py-12 sm:py-16 md:py-20">
@@ -229,7 +229,7 @@ export function PricingSection({ onPickFile, onPro, onCheckoutRazorpay }: Pricin
             <button
               type="button"
               className="btn mt-6 min-h-[48px] w-full rounded-xl border border-emerald-500/35 bg-emerald-500/10 text-sm font-semibold text-emerald-100 transition-all hover:bg-emerald-500/20 active:scale-[0.99] sm:mt-8"
-              onClick={() => router.push("/dashboard")}
+              onClick={() => router.push(userId ? "/dashboard" : "/")}
             >
               Add key in Dashboard
             </button>
