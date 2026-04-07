@@ -38,7 +38,7 @@ export function saveEditorPayload(payload: ResumeEditorPayloadV2, userId?: strin
 }
 
 /** @deprecated use saveEditorPayload(payload, userId) with Clerk user id */
-export function saveEditorSession(_data: ResumeEditorSessionV1): void {
+export function saveEditorSession(): void {
   /* no-op — per-user storage requires Clerk userId */
 }
 
