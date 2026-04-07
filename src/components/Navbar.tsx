@@ -83,7 +83,7 @@ export function Navbar() {
           <SignedIn>
             <Link
               href="/dashboard"
-              className="btn btn-ghost hidden min-h-0 px-2 text-xs text-[#666666] transition-all duration-300 ease-out hover:text-[#f0f0f0] sm:inline-flex sm:px-3 sm:text-sm"
+              className="btn btn-ghost inline-flex min-h-0 px-2 text-xs text-[#666666] transition-all duration-300 ease-out hover:text-[#f0f0f0] sm:px-3 sm:text-sm"
             >
               Dashboard
             </Link>
