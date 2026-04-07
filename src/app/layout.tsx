@@ -58,6 +58,10 @@ export default function RootLayout({
   const content = publishableKey ? (
     <ClerkProvider
       publishableKey={publishableKey}
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/"
+      signInForceRedirectUrl="/"
+      signUpForceRedirectUrl="/"
       appearance={{
         baseTheme: dark,
         variables: {

@@ -118,7 +118,6 @@ export function DashboardResumeSection() {
     <div className="mt-6 min-w-0 space-y-6 border-t border-white/10 pt-6 sm:mt-8 sm:pt-8">
       <div className="min-w-0">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500">Resumes</h2>
-        <p className="mt-1 text-pretty text-xs leading-relaxed text-zinc-600">PDF uploads are stored in Supabase Storage.</p>
         {!isPro && (
           <p className="mt-2 text-pretty text-xs leading-relaxed text-zinc-500">
             Free plan: {resumes.length}/{FREE_PLAN_MAX_RESUMES} resumes.

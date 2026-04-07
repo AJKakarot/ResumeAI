@@ -7,9 +7,7 @@ import { resolveSubscriptionPlan } from "@/lib/subscriptionPlan";
  *
  * **Default:** New users have no `premium` / `plan` → **Free** until payment (`grantPro`) or manual set.
  */
-export function isPremiumPublicMetadata(
-  meta: Record<string, unknown> | undefined | null
-): boolean {
+export function isPremiumPublicMetadata(meta: Record<string, unknown> | undefined | null): boolean {
   if (!meta || typeof meta !== "object") return false;
   const plan = typeof meta.plan === "string" ? meta.plan : null;
   const plan_expiry = typeof meta.plan_expiry === "string" ? meta.plan_expiry : null;
@@ -22,9 +20,7 @@ export function isPremiumPublicMetadata(
 }
 
 /** Maps Clerk billing state to the Supabase `users.plan` column (`free` | `premium`). */
-export function userPlanFromClerkMetadata(
-  meta: Record<string, unknown> | undefined | null
-): UserPlan {
+export function userPlanFromClerkMetadata(meta: Record<string, unknown> | undefined | null): UserPlan {
   return isPremiumPublicMetadata(meta) ? "premium" : "free";
 }
 

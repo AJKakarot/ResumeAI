@@ -45,9 +45,7 @@ export function PricingSection({ onPickFile, onPro, onCheckoutRazorpay }: Pricin
   const [razorpayBusy, setRazorpayBusy] = useState(false);
 
   const razorpayUrl = process.env.NEXT_PUBLIC_RAZORPAY_PRO_URL?.trim();
-  const isPro = isPremiumPublicMetadata(
-    user?.publicMetadata as Record<string, unknown> | undefined
-  );
+  const isPro = isPremiumPublicMetadata(user?.publicMetadata as Record<string, unknown> | undefined);
 
   const handleRazorpay = useCallback(async () => {
     if (!isLoaded) return;
