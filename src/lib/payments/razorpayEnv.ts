@@ -18,8 +18,8 @@ export function getRazorpayKeySecret(): string | undefined {
   );
 }
 
-/** Amount in paise (₹1 = 100 paise). Default ₹999 if unset but keys are present. */
-const DEFAULT_PRO_AMOUNT_PAISE = 99900;
+/** Amount in paise (₹1 = 100 paise). Default ₹29 if unset but keys are present (matches pricing UI). */
+const DEFAULT_PRO_AMOUNT_PAISE = 2900;
 
 export function getRazorpayProAmountPaise(): number {
   const raw = process.env.RAZORPAY_PRO_AMOUNT_PAISE?.trim();

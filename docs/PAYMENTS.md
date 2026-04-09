@@ -14,7 +14,7 @@ See **`.env.example`**. Minimum:
 
 - `RAZORPAY_KEY_ID` (or `razorpay_key_id`)  
 - `RAZORPAY_KEY_SECRET` (or `razorpay_key_secret`)  
-- `RAZORPAY_PRO_AMOUNT_PAISE` — amount in paise (e.g. `99900` = ₹999). If omitted but keys are set, the app defaults to ₹999 and logs a warning.  
+- `RAZORPAY_PRO_AMOUNT_PAISE` — amount in paise (e.g. `2900` = ₹29). If omitted but keys are set, the app defaults to ₹29 and logs a warning.  
 - `RAZORPAY_WEBHOOK_SECRET` — Razorpay Dashboard → Webhooks  
 - `NEXT_PUBLIC_APP_URL` — optional; useful for production redirects  
 

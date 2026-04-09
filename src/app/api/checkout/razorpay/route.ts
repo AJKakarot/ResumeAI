@@ -34,7 +34,7 @@ export async function POST() {
       {
         error: "Razorpay is not configured",
         hint:
-          "Set RAZORPAY_KEY_ID (or razorpay_key_id), RAZORPAY_KEY_SECRET (or razorpay_key_secret), and RAZORPAY_PRO_AMOUNT_PAISE (paise, min 100). Example: RAZORPAY_PRO_AMOUNT_PAISE=99900 for ₹999.",
+          "Set RAZORPAY_KEY_ID (or razorpay_key_id), RAZORPAY_KEY_SECRET (or razorpay_key_secret), and RAZORPAY_PRO_AMOUNT_PAISE (paise, min 100). Example: RAZORPAY_PRO_AMOUNT_PAISE=2900 for ₹29.",
       },
       { status: 503 }
     );
@@ -42,7 +42,7 @@ export async function POST() {
 
   if (usedDefault) {
     console.warn(
-      "[razorpay] RAZORPAY_PRO_AMOUNT_PAISE not set — using default ₹999 (99900 paise). Set RAZORPAY_PRO_AMOUNT_PAISE explicitly."
+      "[razorpay] RAZORPAY_PRO_AMOUNT_PAISE not set — using default ₹29 (2900 paise). Set RAZORPAY_PRO_AMOUNT_PAISE explicitly if you need a different price."
     );
   }
 
